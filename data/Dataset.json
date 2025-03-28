@@ -1,0 +1,78 @@
+{
+  "id": [
+    "string",
+    true,
+    "manual"
+  ],
+  "type": [
+    "DatasetType",
+    true,
+    "manual"
+  ],
+  "title": [
+    "string",
+    true,
+    "manual"
+  ],
+  "description": [
+    "string",
+    true,
+    "manual"
+  ],
+  "topics": [
+    "list[string]",
+    true,
+    "auto"
+  ],
+  "license": [
+    "Open Government License v3.0",
+    true,
+    "default"
+  ],
+  "next_release": [
+    "string",
+    false,
+    "manual"
+  ],
+  "keywords": [
+    "list[string]",
+    false,
+    "manual"
+  ],
+  "QMI": {
+    "href": [
+      "string",
+      true,
+      "manual"
+    ]
+  },
+  "Contact": {
+    "name": [
+      "string",
+      true,
+      "manual"
+    ],
+    "email": [
+      "string",
+      true,
+      "manual"
+    ],
+    "telephone": [
+      "string",
+      false,
+      "manual"
+    ]
+  },
+  "Publisher": {
+    "name": [
+      "string",
+      true,
+      "manual"
+    ],
+    "href": [
+      "string",
+      true,
+      "manual"
+    ]
+  }
+}

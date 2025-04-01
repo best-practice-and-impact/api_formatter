@@ -1,7 +1,7 @@
 import datetime
 from custom_variables import DatasetType, AlterType, QualityDesignation, DistributionFormat, MediaType
 
-class dataset_config:
+class datasetConfig:
     
     def __init__(self, id: str, type: DatasetType, title: str, description: str, topics: list[str],
                  next_release: str, keywords: list[str], QMI_href: str, contact_name: str, contact_email: str,
@@ -27,7 +27,7 @@ class dataset_config:
     def __str__(self):
         return f'Dataset: {self.title}, ID: {self.id}'
         
-class edition_config:
+class editionConfig:
     
     def __init__(self, dataset_id: str, edition: str, edition_title: str, release_date: datetime,
                  version: int, last_updated: datetime, quality_designation: QualityDesignation,

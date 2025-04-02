@@ -1,1 +1,31 @@
-{"DatasetType": ["filterable", "cantabular_flexible_table", "cantabular_multivariate_table", "static"], "AlertType": ["alert", "correction"], "QualityDesignation": ["accredited-offical", "offical", "offical-in-development"], "DistributionFormat": ["csv", "sdmx", "xls", "xlsx", "csdb"], "MediaType": ["text/csv", "application/vnd.sdmx.structurespecficdata+xml", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/plain"]}
+{
+  "DatasetType": [
+    "filterable",
+    "cantabular_flexible_table",
+    "cantabular_multivariate_table",
+    "static"
+  ],
+  "AlertType": [
+    "alert",
+    "correction"
+  ],
+  "QualityDesignation": [
+    "accredited-offical",
+    "official",
+    "official-in-development"
+  ],
+  "DistributionFormat": [
+    "csv",
+    "sdmx",
+    "xls",
+    "xlsx",
+    "csdb"
+  ],
+  "MediaType": [
+    "text/csv",
+    "application/vnd.sdmx.structurespecficdata+xml",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/plain"
+  ]
+}

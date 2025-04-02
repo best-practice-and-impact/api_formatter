@@ -33,8 +33,12 @@ class datasetConfig:
         def get_type(self) -> DatasetType:
             return self._type
         
-        def set_type(self, new_type: str):
-            self._type = DatasetType(new_type)
+        def set_type(self, new_type: str): 
+            try:
+                self._type = DatasetType(new_type)
+            except ValueError:
+                # more informative error message
+                raise ValueError(f'{new_type} is not valid; possible choices: {list(DatasetType)}')
             
         def get_title(self) -> str:
             return self._title

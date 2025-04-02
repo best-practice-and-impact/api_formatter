@@ -14,7 +14,7 @@ class datasetConfig:
         self._topics: list[str] = topics
         self._license: str = "Open Government License v3.0"
         
-        self._next_release: str = next_release
+        self._next_release: str = next_release # This field is designated a string on the plan but both date related fields in edition are datetime objects. I believe this should also be a datetime object, both for the sake of consistancy and to make error checking easier.
         self._keywords: list[str] = keywords
         
         self._QMI: dict = {"href": QMI_href}
@@ -24,41 +24,102 @@ class datasetConfig:
         self._Publisher: dict = {"name": publisher_name,
                                 "href": publisher_href}
         
-        def get_id(self):
+        def get_id(self) -> str:
             return self._id
         
-        def set_id(self, new_id):
+        def set_id(self, new_id: str):
             self._id = new_id
             
-        def get_type(self):
+        def get_type(self) -> DatasetType:
             return self._type
         
-        def set_type(self, new_type):
-            self._type = new_type
+        def set_type(self, new_type: str):
+            self._type = DatasetType(new_type)
             
-        def get_title(self):
+        def get_title(self) -> str:
             return self._title
         
-        def set_title(self, new_title):
+        def set_title(self, new_title: str):
             self._title = new_title
             
-        def get_description(self):
+        def get_description(self) -> str:
             return self._description
         
-        def set_description(self, new_description):
+        def set_description(self, new_description: str):
             self._description = new_description
             
-        def get_topics(self):
+        def get_topics(self) -> list[str]:
             return self._topics
         
-        def set_topics(self, new_topics):
+        def set_topics(self, new_topics: list[str]):
             self._topics = new_topics
             
-        def get_license(self):
+        def get_license(self) -> str:
             return self._license
-        
-        def set_license(self, new_license):
+          
+        # The set method is here for now, as it was mentioned in the plan that an option for changing the license should be later allowed.    
+        def set_license(self, new_license: str):
             self._license = new_license
+            
+        def get_next_release(self) -> str:
+            return self._next_release
+        
+        def set_next_release(self, new_next_release: str):
+            self._next_release = new_next_release
+            
+        def get_keywords(self) -> list[str]:
+            return self._keywords
+        
+        def set_keywords(self, new_keywords: list[str]):
+            self._keywords = new_keywords
+            
+        def get_QMI_full(self) -> dict:
+            return self._QMI
+        
+        def set_QMI_full(self, new_QMI: dict):
+            self._QMI = new_QMI
+            
+        def get_contact_full(self) -> dict:
+            return self._Contact
+        
+        def set_contact_full(self, new_contact: dict):
+            self._Contact = new_contact
+            
+        def get_contact_name(self) -> str:
+            return self._Contact['name']
+        
+        def set_contact_name(self, new_name: str):
+            self._Contact['name'] = new_name
+            
+        def get_contact_email(self) -> str:
+            return self._Contact['email']
+        
+        def set_contact_email(self, new_email: str):
+            self._Contact['email'] = new_email
+            
+        def get_contact_telephone(self) -> str:
+            return self._Contact['telephone']
+        
+        def set_contact_telephone(self, new_telephone: str):
+            self._Contact['telephone'] = new_telephone
+            
+        def get_publisher_full(self) -> dict:
+            return self._Publisher
+        
+        def set_publisher_full(self, new_publisher: dict):
+            self._Publisher = new_publisher
+            
+        def get_publisher_name(self) -> str:
+            return self._Publisher['name']
+        
+        def set_publisher_name(self, new_name: str):
+            self._Publisher['name'] = new_name
+        
+        def get_publisher_href(self) -> str:
+            return self._Publisher['href']
+        
+        def set_publisher_href(self, new_href: str):
+            self._Publisher['href'] = new_href
             
         
     def __str__(self):

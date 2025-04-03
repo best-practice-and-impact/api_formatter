@@ -10,7 +10,7 @@ class DatasetType(Enum):
     def _missing_(cls, value):
         return ""
     
-class AlterType(Enum):
+class AlertType(Enum):
     ALERT = "alert",
     CORRECTION = "correction"
     

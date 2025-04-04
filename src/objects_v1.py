@@ -1,6 +1,6 @@
 import datetime
 import json
-from custom_variables import DatasetType, AlterType, QualityDesignation, DistributionFormat, MediaType
+from custom_variables import DatasetType, AlertType, QualityDesignation, DistributionFormat, MediaType
 
 class dataset_config:
     
@@ -42,7 +42,7 @@ class edition_config:
         
         self._Usage_Notes: dict = {"title": "",
                                   "note": ""}
-        self._Alert: dict = {"type": AlterType(),
+        self._Alert: dict = {"type": AlertType(),
                             "date": "",
                             "description": ""}
         self._Distribution: dict = {"title": "",
@@ -65,7 +65,7 @@ class edition_config:
         
         self._Usage_Notes: dict = {"title": config_file['Usage_Note']['title'],
                                   "note": config_file['Usage_Note']['note']}
-        self._Alert: dict = {"type": AlterType(config_file['Alert']['type']),
+        self._Alert: dict = {"type": AlertType(config_file['Alert']['type']),
                             "date": config_file['Alert']['date'],
                             "description": config_file['Alert']['description']}
         self._Distribution: dict = {"title": config_file['Distribution']['title'],

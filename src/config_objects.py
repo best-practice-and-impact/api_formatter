@@ -3,131 +3,44 @@ from custom_variables import DatasetType, AlertType, QualityDesignation, Distrib
 
 class datasetConfig:
     
-    def __init__(self, id: str = "", type: DatasetType = "", title: str = "", description: str = "", topics: list[str] = [],
-                 next_release: str = "", keywords: list[str] = [], QMI_href: str = "", contact_name: str = "", contact_email: str = "",
-                 contact_telephone: str = "", publisher_name: str = "", publisher_href: str = ""):
-        self._id: str = id
-        self._type: DatasetType = DatasetType(type)
-        self._title: str = title
-        self._description: str = description
-        
-        self._topics: list[str] = topics
-        self._license: str = "Open Government License v3.0"
-        
-        self._next_release: str = next_release # This field is designated a string on the plan but both date related fields in edition are datetime objects. I believe this should also be a datetime object, both for the sake of consistancy and to make error checking easier.
-        self._keywords: list[str] = keywords
-        
-        self._QMI: dict = {"href": QMI_href}
-        self._Contact: dict = {"name": contact_name, 
-                              "email": contact_email,
-                              "telephone": contact_telephone}
-        self._Publisher: dict = {"name": publisher_name,
-                                "href": publisher_href}
-        
-        def get_id(self) -> str:
-            return self._id
-        
-        def set_id(self, new_id: str):
-            self._id = new_id
+    def __init__(self):
+
+        self._dataset_metadata = {"id": "",
+                                  "type": "",
+                                  "title": "",
+                                  "description": "",
+                                  "topics": [],
+                                  "license": "Open Government License v3.0",
+                                  "next_release": "",
+                                  "keywords": [],
+                                  "QMI": {"href": ""},
+                                  "contact": {"name": "", "email": "", "telephone": ""},
+                                  "publisher": {"name": "", "href": ""}}
             
-        def get_type(self) -> DatasetType:
-            return self._type
-        
-        def set_type(self, new_type: str): 
+    def import_from_dict(self, new_meta_data: dict):
+        if list(self._dataset_metadata.keys()) == list(new_meta_data.keys()):
+            self._dataset_metadata = new_meta_data
+        else:
+            raise KeyError(f'ERROR: The config fields in the dictonary you are trying to use are incorrect.\nPlease make sure you are using these fields for your config file:{list(self._dataset_metadata.keys())}')
+    
+    def get(self, key: str):
+        return self._dataset_metadata.get(key)
+    
+    def set(self, key: str, value: str):
+        if key == "type":
             try:
-                self._type = DatasetType(new_type)
+                value = DatasetType(value)
             except ValueError:
-                # more informative error message
-                raise ValueError(f'{new_type} is not valid; possible choices: {list(DatasetType)}')
-            
-        def get_title(self) -> str:
-            return self._title
+                print(f'{value} is not valid; possible choices: {list(QualityDesignation)}')
+                return None
+        if key in self._dataset_metadata:
+            self._dataset_metadata[key] = value
+        else:
+            raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
         
-        def set_title(self, new_title: str):
-            self._title = new_title
-            
-        def get_description(self) -> str:
-            return self._description
-        
-        def set_description(self, new_description: str):
-            self._description = new_description
-            
-        def get_topics(self) -> list[str]:
-            return self._topics
-        
-        def set_topics(self, new_topics: list[str]):
-            self._topics = new_topics
-            
-        def get_license(self) -> str:
-            return self._license
-          
-        # The set method is here for now, as it was mentioned in the plan that an option for changing the license should be later allowed.    
-        def set_license(self, new_license: str):
-            self._license = new_license
-            
-        def get_next_release(self) -> str:
-            return self._next_release
-        
-        def set_next_release(self, new_next_release: str):
-            self._next_release = new_next_release
-            
-        def get_keywords(self) -> list[str]:
-            return self._keywords
-        
-        def set_keywords(self, new_keywords: list[str]):
-            self._keywords = new_keywords
-            
-        def get_QMI_full(self) -> dict:
-            return self._QMI
-        
-        def set_QMI_full(self, new_QMI: dict):
-            self._QMI = new_QMI
-            
-        def get_contact_full(self) -> dict:
-            return self._Contact
-        
-        def set_contact_full(self, new_contact: dict):
-            self._Contact = new_contact
-            
-        def get_contact_name(self) -> str:
-            return self._Contact['name']
-        
-        def set_contact_name(self, new_name: str):
-            self._Contact['name'] = new_name
-            
-        def get_contact_email(self) -> str:
-            return self._Contact['email']
-        
-        def set_contact_email(self, new_email: str):
-            self._Contact['email'] = new_email
-            
-        def get_contact_telephone(self) -> str:
-            return self._Contact['telephone']
-        
-        def set_contact_telephone(self, new_telephone: str):
-            self._Contact['telephone'] = new_telephone
-            
-        def get_publisher_full(self) -> dict:
-            return self._Publisher
-        
-        def set_publisher_full(self, new_publisher: dict):
-            self._Publisher = new_publisher
-            
-        def get_publisher_name(self) -> str:
-            return self._Publisher['name']
-        
-        def set_publisher_name(self, new_name: str):
-            self._Publisher['name'] = new_name
-        
-        def get_publisher_href(self) -> str:
-            return self._Publisher['href']
-        
-        def set_publisher_href(self, new_href: str):
-            self._Publisher['href'] = new_href
-            
         
     def __str__(self):
-        return f'Dataset: {self.title}, ID: {self.id}'
+        return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
         
 class editionConfig:
     

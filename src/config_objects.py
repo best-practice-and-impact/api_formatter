@@ -2,281 +2,265 @@ import datetime
 from custom_variables import DatasetType, AlertType, QualityDesignation, DistributionFormat, MediaType
 
 class datasetConfig:
+    """
+    A class used to store meta data about a dataset.
     
-    def __init__(self, id: str = "", type: DatasetType = "", title: str = "", description: str = "", topics: list[str] = [],
-                 next_release: str = "", keywords: list[str] = [], QMI_href: str = "", contact_name: str = "", contact_email: str = "",
-                 contact_telephone: str = "", publisher_name: str = "", publisher_href: str = ""):
-        self._id: str = id
-        self._type: DatasetType = DatasetType(type)
-        self._title: str = title
-        self._description: str = description
+    ...
+    
+    Attributes
+    ----------
+    dataset_metadata : dict
+        A dictionary containing all the different fields of the meta data
         
-        self._topics: list[str] = topics
-        self._license: str = "Open Government License v3.0"
-        
-        self._next_release: str = next_release # This field is designated a string on the plan but both date related fields in edition are datetime objects. I believe this should also be a datetime object, both for the sake of consistancy and to make error checking easier.
-        self._keywords: list[str] = keywords
-        
-        self._QMI: dict = {"href": QMI_href}
-        self._Contact: dict = {"name": contact_name, 
-                              "email": contact_email,
-                              "telephone": contact_telephone}
-        self._Publisher: dict = {"name": publisher_name,
-                                "href": publisher_href}
-        
-        def get_id(self) -> str:
-            return self._id
-        
-        def set_id(self, new_id: str):
-            self._id = new_id
+    Methods
+    -------
+    import_from_dict(new_meta_data):
+        Imports meta data from a pre-existing dictionary.
+    get(key):
+        Get the value of the corresponding key within the meta data.
+    set(key, value):
+        Sets the value of the corresponding key within the meta data to a new value.
+    """
+    def __init__(self):
+        """
+        Constructs the initial dictionary for storing meta data.
+        """
+        self._dataset_metadata = {
+            "id": "",
+            "type": DatasetType(),
+            "title": "",
+            "description": "",
+            "topics": [],
+            "license": "Open Government License v3.0",
+            "next_release": "",
+            "keywords": [],
+            "QMI": {"href": ""},
+            "contact": {"name": "", "email": "", "telephone": ""},
+            "publisher": {"name": "", "href": ""}
+        }
             
-        def get_type(self) -> DatasetType:
-            return self._type
+    def import_from_dict(self, new_meta_data: dict):
+        """
+        Imports meta data from a pre-existing dictionary.
+
+        Parameters
+        ----------
+        new_meta_data : dict
+            External dictionary to be imported
         
-        def set_type(self, new_type: str): 
+        Raises
+        ------
+        KeyError: Raised if a one of keys in the external dictionary isn't part of the meta data dictionary
+        """
+        
+        for key, value in new_meta_data.items():
+            if key in self._dataset_metadata.keys():
+                self.set(key, value)
+            else:
+                raise KeyError(f'ERROR: The config fields in the dictonary you are trying to use are incorrect.\nPlease make sure you are using these fields for your config file:{list(self._dataset_metadata.keys())}')
+
+                    
+        
+    def get(self, key: str):
+        """
+        Get the value of the corresponding key within the meta data.
+
+        Parameters
+        ----------
+        key : str
+            Key used to index meta data
+
+        Returns
+        -------
+        obj
+            Value of inputed key
+        
+        Raises
+        ------
+        KeyError 
+            Raised if the key inputed is not a field in the meta data
+        """
+        if key in self._dataset_metadata:
+            return self._dataset_metadata.get(key)
+        else:
+            raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
+    
+    def set(self, key: str, value: str):
+        """
+        Sets the value of the corresponding key within the meta data to a new value.
+
+        Parameters
+        ----------
+        key : str
+            Key used to index meta data
+        value : str
+            New meta data vlaue for the corresponding key
+
+        Returns
+        -------
+        None
+            Ends function if the value entered for "type" isn't one of its options
+
+        Raises
+        ------
+        KeyError
+            Raised if the key inputed is not a field in the meta data
+        """
+        if key == "type":
             try:
-                self._type = DatasetType(new_type)
+                value = DatasetType(value)
             except ValueError:
-                # more informative error message
-                raise ValueError(f'{new_type} is not valid; possible choices: {list(DatasetType)}')
-            
-        def get_title(self) -> str:
-            return self._title
+                print(f'{value} is not valid; possible choices: {list(QualityDesignation)}')
+                return None
+        if key in self._dataset_metadata:
+            self._dataset_metadata[key] = value
+        else:
+            raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
         
-        def set_title(self, new_title: str):
-            self._title = new_title
-            
-        def get_description(self) -> str:
-            return self._description
-        
-        def set_description(self, new_description: str):
-            self._description = new_description
-            
-        def get_topics(self) -> list[str]:
-            return self._topics
-        
-        def set_topics(self, new_topics: list[str]):
-            self._topics = new_topics
-            
-        def get_license(self) -> str:
-            return self._license
-          
-        # The set method is here for now, as it was mentioned in the plan that an option for changing the license should be later allowed.    
-        def set_license(self, new_license: str):
-            self._license = new_license
-            
-        def get_next_release(self) -> str:
-            return self._next_release
-        
-        def set_next_release(self, new_next_release: str):
-            self._next_release = new_next_release
-            
-        def get_keywords(self) -> list[str]:
-            return self._keywords
-        
-        def set_keywords(self, new_keywords: list[str]):
-            self._keywords = new_keywords
-            
-        def get_QMI_full(self) -> dict:
-            return self._QMI
-        
-        def set_QMI_full(self, new_QMI: dict):
-            self._QMI = new_QMI
-            
-        def get_contact_full(self) -> dict:
-            return self._Contact
-        
-        def set_contact_full(self, new_contact: dict):
-            self._Contact = new_contact
-            
-        def get_contact_name(self) -> str:
-            return self._Contact['name']
-        
-        def set_contact_name(self, new_name: str):
-            self._Contact['name'] = new_name
-            
-        def get_contact_email(self) -> str:
-            return self._Contact['email']
-        
-        def set_contact_email(self, new_email: str):
-            self._Contact['email'] = new_email
-            
-        def get_contact_telephone(self) -> str:
-            return self._Contact['telephone']
-        
-        def set_contact_telephone(self, new_telephone: str):
-            self._Contact['telephone'] = new_telephone
-            
-        def get_publisher_full(self) -> dict:
-            return self._Publisher
-        
-        def set_publisher_full(self, new_publisher: dict):
-            self._Publisher = new_publisher
-            
-        def get_publisher_name(self) -> str:
-            return self._Publisher['name']
-        
-        def set_publisher_name(self, new_name: str):
-            self._Publisher['name'] = new_name
-        
-        def get_publisher_href(self) -> str:
-            return self._Publisher['href']
-        
-        def set_publisher_href(self, new_href: str):
-            self._Publisher['href'] = new_href
-            
         
     def __str__(self):
-        return f'Dataset: {self.title}, ID: {self.id}'
+        return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
         
 class editionConfig:
+    """
+    A class that stores meta data about individual editions
     
-    def __init__(self, dataset_id: str, edition: str, edition_title: str, release_date: datetime,
-                 version: int, last_updated: datetime, quality_designation: QualityDesignation,
-                 usage_notes_title: str, usage_notes_note: str, alert_type: AlertType,
-                 alert_date: datetime, alert_description: str, distribution_title: str,
-                 distribution_format: DistributionFormat, distribution_download_url: str,
-                 distribution_byte_size: int, distribution_media_type: MediaType):
+    ...
+    
+    Attributes
+    ----------
+    edition_metadata : dict
+        A dictionary containing all the different fields of the meta data
         
-        self.dataset_id: str = dataset_id
-        self.edition: str = edition
-        self.edition_title: str = edition_title
-        self.release_date: datetime = release_date
-        
-        self.version: int = version
-        self.last_updated: datetime = last_updated
-        self.quality_designation: QualityDesignation = quality_designation
-        
-        self.Usage_Notes: dict = {"title": usage_notes_title,
-                                  "note": usage_notes_note}
-        self.Alert: dict = {"type": alert_type,
-                            "date": alert_date,
-                            "description": alert_description}
-        self.Distribution: dict = {"title": distribution_title,
-                                   "format": distribution_format,
-                                   "download_url": distribution_download_url,
-                                   "byte_size": distribution_byte_size,
-                                   "media_type": distribution_media_type}
+    Methods
+    -------
+    import_from_dict(new_meta_data):
+        Imports meta data from a pre-existing dictionary.
+    get(key):
+        Get the value of the corresponding key within the meta data.
+    set(key, value):
+        Sets the value of the corresponding key within the meta data to a new value.
+    """
+    def __init__(self):
+        """
+        Constructs the initial dictionary for storing meta data.
+        """
+        self._edition_metadata = {
+            "dataset_id": "",
+            "edition": "",
+            "edition_title": "",
+            "release_date": datetime(2050, 1, 1),
+            "version": 0,
+            "last_updated": datetime.now(),
+            "quality_designation": QualityDesignation(),
+            "usage_notes": {"title": "", "note": ""},
+            "alert": {"type": AlertType(), "date": datetime(2050, 1, 1), "description": ""},
+            "distribution": {"title": "", "format": DistributionFormat(), "download_url": "", "byte_size": 0, "media_type": MediaType()}
+        }
     
-    def get_dataset_id(self) -> str:
-        return self.dataset_id
-    
-    def set_dataset_id(self, new_id: str):
-        self.dataset_id = new_id
-        
-    def get_edition(self) -> str:
-        return self.edition
-    
-    def set_edition(self, new_edition: str):
-        self.edition = new_edition
-        
-    def get_edition_title(self) -> str:
-        return self.edition_title
-    
-    def set_edition_title(self, new_title: str):
-        self.edition_title = new_title
-        
-    def get_release_date(self) -> datetime:
-        return self.release_date
-    
-    def set_release_date(self, new_release_date: str):
-        self.release_date = datetime.strptime(new_release_date, '%d\%m\%Y')
-        
-    def get_version(self) -> int:
-        return self.version
-        
-    def get_last_updated(self) -> datetime:
-        return self.last_updated
-    
-    def get_quality_designation(self) -> QualityDesignation:
-        return self.quality_designation
-    
-    def set_quality_designation(self, new_designation: str):
-        try:
-            self.quality_designation = QualityDesignation(new_designation)
-        except ValueError:
-            # more informative error message
-            raise ValueError(f'{new_designation} is not valid; possible choices: {list(QualityDesignation)}')
-        
-    def get_usage_notes_full(self) -> dict:
-        return self.Usage_Notes
-    
-    def set_usage_notes_full(self, new_usage_notes: dict):
-        self.Usage_Notes = new_usage_notes
-        
-    def get_usage_notes_title(self) -> str:
-        return self.Usage_Notes['title']
-    
-    def set_usage_notes_title(self, new_title: str):
-        self.Usage_Notes['title'] = new_title
-        
-    def get_usage_notes_note(self) -> str:
-        return self.Usage_Notes['note']
-    
-    def set_usage_notes_note(self, new_note: str):
-        self.Usage_Notes['note'] = new_note
-    
-    def get_alert_full(self) -> dict:
-        return self.Alert
-    
-    def set_alert_full(self, new_alert: dict):
-        self.Alert = new_alert
-        
-    def get_alert_type(self) -> AlertType:
-        return self.Alert['type']
-    
-    def set_alert_type(self, new_type: str):
-        try:
-            self.Alert['type'] = AlertType(new_type)
-        except ValueError:
-            # more informative error message
-            raise ValueError(f'{new_type} is not valid; possible choices: {list(AlertType)}')
-        
-    def get_alert_date(self) -> datetime:
-        return self.Alert['date']
-    
-    def set_alert_date(self, new_date: str):
-        self.Alert['date'] = datetime.strptime(new_date, '%d\%m\%Y')
-        
-    def get_alert_description(self) -> str:
-        return self.Alert['description']
-    
-    def set_alert_description(self, new_description: str):
-        self.Alert['description'] = new_description
-        
-    def get_distribution_full(self) -> dict:
-        return self.Distribution
-    
-    def set_distribution_full(self, new_distribution: dict):
-        self.Distribution = new_distribution
-        
-    def get_distribution_title(self) -> str:
-        return self.Distribution['title']
-    
-    def set_distribution_title(self, new_title: str):
-        self.Distribution['title'] = new_title
-        
-    def get_distribution_format(self) -> DistributionFormat:
-        return self.Distribution['format']
-    
-    def set_distribution_format(self, new_format: DistributionFormat):
-        try:
-            self.Distribution['format'] = DistributionFormat(new_format)
-        except ValueError:
-            # more informative error message
-            raise ValueError(f'{new_format} is not valid; possible choices: {list(DistributionFormat)}')
+    def import_from_dict(self, new_meta_data: dict):
+        """
+        Imports meta data from a pre-existing dictionary.
 
-    def get_distribution_download_url(self) -> str:
-        return self.Distribution['download_url']
+        Parameters
+        ----------
+        new_meta_data : dict
+            External dictionary to be imported
         
-    def set_distribution_download_url(self, new_url: str):
-        self.Distribution['download_url'] = new_url
+        Raises
+        ------
+        KeyError: Raised if a one of keys in the external dictionary isn't part of the meta data dictionary
+        """
+        
+        for key, value in new_meta_data.items():
+            if key in self._edition_metadata.keys():
+                self.set(key, value)
+            else:
+                raise KeyError(f'ERROR: The config fields in the dictonary you are trying to use are incorrect.\nPlease make sure you are using these fields for your config file:{list(self._dataset_metadata.keys())}')
+
+    def get(self, key: str):
+        """
+        Get the value of the corresponding key within the meta data.
+
+        Parameters
+        ----------
+        key : str
+            Key used to index meta data
+
+        Returns
+        -------
+        obj
+            Value of inputed key
+        
+        Raises
+        ------
+        KeyError 
+            Raised if the key inputed is not a field in the meta data
+        """ 
+        if key in self._edition_metadata:
+            return self._edition_metadata.get(key)
+        else:
+            raise KeyError(f'{key} is not a config option. Please choose from {list(self._edition_metadata.keys())}')
     
-    def get_distribution_byte_size(self) -> int:
-        return self.Distribution['byte_size']
+    def set(self, key: str, value: str):
+        """
+        Sets the value of the corresponding key within the meta data to a new value.
+
+        Parameters
+        ----------
+        key : str
+            Key used to index meta data
+        value : str
+            New meta data vlaue for the corresponding key
+
+        Returns
+        -------
+        None
+            Ends function if the value entered for "quality_designation", "alert" or "distribuation" 
+            isn't one of its options or when the value for "release_date" is in the wrong format
+
+        Raises
+        ------
+        KeyError
+            Raised if the key inputed is not a field in the meta data
+        """
+        
+        if key == "quality_designation":
+            try:
+                value = QualityDesignation(value)
+            except ValueError:
+                print(f'{value} is not valid; possible choices: {list(QualityDesignation)}')
+                return None
+            
+        if key == "release_date":
+            try:
+                value = datetime.strptime(value, "%d/%m/%Y")
+            except ValueError:
+                print(f'{value} is the wrong datetime format. Try "dd/mm/yyyy".')
+                return None
+            
+        if key in self._edition_metadata:
+            
+            if key == 'alert':
+                try:
+                    self._edition_metadata[key]['type'] = AlertType(value['type'])
+                    self._edition_metadata[key]['date'] = datetime.strptime(value['date'], '%d/%m/%Y')
+                except ValueError:
+                    print('There is an error with you alert values.')
+                    return None
+            
+            if key == 'distribuation':
+                try:
+                    self._edition_metadata[key]['format'] = DistributionFormat(value['format'])
+                except ValueError:
+                    print(f'{value['format']} is not valid; possible choices: {list(DistributionFormat)}')
+                    return None
+            
+            self._edition_metadata[key] = value
+        
+        else:
+            raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
     
-    def get_distribution_media_type(self) -> MediaType:
-        return self.Distribution['media_type']
     
     def __str__(self):
-        return f'Edition: {self.edition_title}, as part of Dataset: {self.dataset_id}'
+        return f'Edition: {self._edition_metadata["edition_title"]}, as part of Dataset: {self._edition_metadata["dataset_id"]}'

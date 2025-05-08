@@ -149,9 +149,12 @@ class datasetConfig:
         self.import_from_dict(loaded_raw_metadata)
 
         return loaded_raw_metadata
+    
+    def export_to_json(self, file_path: str = '/api_formatter/results'):
+        with open(f'{file_path}/{self._dataset_metadata.get('title')}_metadata.json', 'w') as fp:
+            json.dump(self._dataset_metadata, fp)
+        
 
-        
-        
     def __str__(self):
         return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
         
@@ -324,6 +327,10 @@ class editionConfig:
         self.import_from_dict(loaded_raw_metadata)
 
         return loaded_raw_metadata
+    
+    def export_to_json(self, file_path: str = '/api_formatter/results'):
+        with open(f'{file_path}/{self._edition_metadata.get('edition_title')}_metadata.json', 'w') as fp:
+            json.dump(self._edition_metadata, fp)
     
     
     def __str__(self):

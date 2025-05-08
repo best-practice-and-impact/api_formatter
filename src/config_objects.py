@@ -1,5 +1,8 @@
 import datetime
 from custom_variables import DatasetType, AlertType, QualityDesignation, DistributionFormat, MediaType
+import json
+import yaml 
+from pathlib import Path
 
 class datasetConfig:
     """
@@ -116,6 +119,37 @@ class datasetConfig:
             self._dataset_metadata[key] = value
         else:
             raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
+        
+
+    #config_path should be raw string not normal string ('\' as separator)
+    def load_metadata_from_file(self, config_path: str):
+        """Load configuration from a JSON or YAML file and import it into the metadata."""
+        #check file extension
+        format = config_path.split(".")[-1].lower()
+        verified_config_path = Path(config_path)
+        
+        if not verified_config_path.exists():
+            raise FileNotFoundError(f"Configuration file not found: {verified_config_path}")
+        
+        #load the file content based on format
+        try:
+            with open(verified_config_path, 'r') as file:
+                if format == 'json':
+                    loaded_raw_metadata = json.load(file)
+                elif format in ['yaml', 'yml']:
+                    loaded_raw_metadata = yaml.safe_load(file)
+                else:
+                    raise ValueError(f"Unsupported file format: {format}. Only 'json' and 'yaml' are supported.")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error parsing JSON file: {e}")
+        except yaml.YAMLError as e:
+            raise ValueError(f"Error parsing YAML file: {e}")
+    
+        # it only validates input dictionary and updates the _dataset_metadata attribute of the instance
+        self.import_from_dict(loaded_raw_metadata)
+
+        return loaded_raw_metadata
+
         
         
     def __str__(self):
@@ -260,7 +294,38 @@ class editionConfig:
         
         else:
             raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
+        
+
+    #config_path should be raw string not normal string ('\' as separator)
+    def load_metadata_from_file(self, config_path: str):
+        """Load configuration from a JSON or YAML file and import it into the metadata."""
+        #check file extension
+        format = config_path.split(".")[-1].lower()
+        verified_config_path = Path(config_path)
+        
+        if not verified_config_path.exists():
+            raise FileNotFoundError(f"Configuration file not found: {verified_config_path}")
+        
+        #load the file content based on format
+        try:
+            with open(verified_config_path, 'r') as file:
+                if format == 'json':
+                    loaded_raw_metadata = json.load(file)
+                elif format in ['yaml', 'yml']:
+                    loaded_raw_metadata = yaml.safe_load(file)
+                else:
+                    raise ValueError(f"Unsupported file format: {format}. Only 'json' and 'yaml' are supported.")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Error parsing JSON file: {e}")
+        except yaml.YAMLError as e:
+            raise ValueError(f"Error parsing YAML file: {e}")
+    
+        # it only validates input dictionary and updates the _dataset_metadata attribute of the instance
+        self.import_from_dict(loaded_raw_metadata)
+
+        return loaded_raw_metadata
     
     
     def __str__(self):
         return f'Edition: {self._edition_metadata["edition_title"]}, as part of Dataset: {self._edition_metadata["dataset_id"]}'
+    

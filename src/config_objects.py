@@ -151,6 +151,14 @@ class datasetConfig:
         return loaded_raw_metadata
     
     def export_to_json(self, file_path: str = '/api_formatter/results'):
+        """
+        Exports the dataset meta data to a json file.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            The directory path for where the json file will be stored, by default '/api_formatter/results'
+        """
         with open(f'{file_path}/{self._dataset_metadata.get('title')}_metadata.json', 'w') as fp:
             json.dump(self._dataset_metadata, fp)
         
@@ -329,6 +337,14 @@ class editionConfig:
         return loaded_raw_metadata
     
     def export_to_json(self, file_path: str = '/api_formatter/results'):
+        """
+        Exports the edition meta data to a json file.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            The directory path for where the json file will be stored, by default '/api_formatter/results'
+        """
         with open(f'{file_path}/{self._edition_metadata.get('edition_title')}_metadata.json', 'w') as fp:
             json.dump(self._edition_metadata, fp)
     

@@ -129,7 +129,7 @@ class datasetConfig:
         verified_config_path = Path(config_path)
         
         if not verified_config_path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {verified_config_path}")
+            raise FileNotFoundError(f'Configuration file not found: {verified_config_path}')
         
         #load the file content based on format
         try:
@@ -139,11 +139,11 @@ class datasetConfig:
                 elif format in ['yaml', 'yml']:
                     loaded_raw_metadata = yaml.safe_load(file)
                 else:
-                    raise ValueError(f"Unsupported file format: {format}. Only 'json' and 'yaml' are supported.")
+                    raise ValueError(f'Unsupported file format: {format}. Only "json" and "yaml" are supported.')
         except json.JSONDecodeError as e:
-            raise ValueError(f"Error parsing JSON file: {e}")
+            raise ValueError(f'Error parsing JSON file: {e}')
         except yaml.YAMLError as e:
-            raise ValueError(f"Error parsing YAML file: {e}")
+            raise ValueError(f'Error parsing YAML file: {e}')
     
         # it only validates input dictionary and updates the _dataset_metadata attribute of the instance
         self.import_from_dict(loaded_raw_metadata)
@@ -294,7 +294,7 @@ class editionConfig:
                     print('There is an error with you alert values.')
                     return None
             
-            if key == 'distribuation':
+            if key == 'distribution':
                 try:
                     self._edition_metadata[key]['format'] = DistributionFormat(value['format'])
                 except ValueError:
@@ -304,7 +304,7 @@ class editionConfig:
             self._edition_metadata[key] = value
         
         else:
-            raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
+            raise KeyError(f'{key} is not a config option. Please choose from {list(self._edition_metadata.keys())}')
         
 
     #config_path should be raw string not normal string ('\' as separator)
@@ -315,7 +315,7 @@ class editionConfig:
         verified_config_path = Path(config_path)
         
         if not verified_config_path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {verified_config_path}")
+            raise FileNotFoundError(f'Configuration file not found: {verified_config_path}')
         
         #load the file content based on format
         try:
@@ -325,11 +325,11 @@ class editionConfig:
                 elif format in ['yaml', 'yml']:
                     loaded_raw_metadata = yaml.safe_load(file)
                 else:
-                    raise ValueError(f"Unsupported file format: {format}. Only 'json' and 'yaml' are supported.")
+                    raise ValueError(f'Unsupported file format: {format}. Only "json" and "yaml" are supported.')
         except json.JSONDecodeError as e:
-            raise ValueError(f"Error parsing JSON file: {e}")
+            raise ValueError(f'Error parsing JSON file: {e}')
         except yaml.YAMLError as e:
-            raise ValueError(f"Error parsing YAML file: {e}")
+            raise ValueError(f'Error parsing YAML file: {e}')
     
         # it only validates input dictionary and updates the _dataset_metadata attribute of the instance
         self.import_from_dict(loaded_raw_metadata)

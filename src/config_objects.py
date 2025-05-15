@@ -41,9 +41,7 @@ class datasetConfig:
             "QMI": {"href": ""},
             "contact": {"name": "", "email": "", "telephone": ""},
             "publisher": {"name": "", "href": ""},
-            "file_path": Path(""),
-            "file_format": "",
-            "file_size": None
+            "file" = {"path": Path(""), "format": "", "size": 0}
         }
             
     def import_from_dict(self, new_meta_data: dict):
@@ -119,12 +117,10 @@ class datasetConfig:
             except ValueError:
                 print(f'{value} is not valid; possible choices: {list(QualityDesignation)}')
                 return None
-        if key in ["file_format", "file_size"]:
-            raise ValueError(f"{key} should not be altered manually. Please ensure file_path is correct.")
-        if key == "file_path":
-            self._dataset_metadata[key] = Path(value)
-            self._dataset_metadata["file_format"] = value.split(".")[-1]
-            self._dataset_metadata["file_size"] = os.path.getsize(value)
+        if key == "file": # Coded like this because format and size shouldn't be changed manually
+            self._dataset_metadata[key] =  {"path": Path(value),
+                                            "format": value.split(".")[-1],
+                                            "size": os.path.getsize(value)} # Size in bytes
         elif key in self._dataset_metadata:
             self._dataset_metadata[key] = value
         else:

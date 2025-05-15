@@ -75,19 +75,21 @@
       "manual"
     ]
   },
-  "file_path": [
+  "file": {
+    "path": [
     "pathlib.Path",
     true,
     "manual"
-  ],
-  "file_format": [
+    ],
+    "format": [
     "string",
     false,
     "auto"
-  ],
-  "file_size": [
+    ],
+    "file_size": [
     "int",
     false,
     "auto"
-  ]
+    ]
+  }
 }

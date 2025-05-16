@@ -41,7 +41,7 @@ class datasetConfig:
             "QMI": {"href": ""},
             "contact": {"name": "", "email": "", "telephone": ""},
             "publisher": {"name": "", "href": ""},
-            "file" = {"path": Path(""), "format": "", "size": 0}
+            "file": {"path": Path(""), "format": "", "size": 0}
         }
             
     def import_from_dict(self, new_meta_data: dict):

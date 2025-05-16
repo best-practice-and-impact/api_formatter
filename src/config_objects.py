@@ -3,6 +3,7 @@ from custom_variables import DatasetType, AlertType, QualityDesignation, Distrib
 import json
 import yaml 
 from pathlib import Path
+import os
 
 class datasetConfig:
     """
@@ -39,7 +40,8 @@ class datasetConfig:
             "keywords": [],
             "QMI": {"href": ""},
             "contact": {"name": "", "email": "", "telephone": ""},
-            "publisher": {"name": "", "href": ""}
+            "publisher": {"name": "", "href": ""},
+            "file": {"path": Path(""), "format": "", "size": 0}
         }
             
     def import_from_dict(self, new_meta_data: dict):
@@ -115,7 +117,11 @@ class datasetConfig:
             except ValueError:
                 print(f'{value} is not valid; possible choices: {list(QualityDesignation)}')
                 return None
-        if key in self._dataset_metadata:
+        if key == "file": # Coded like this because format and size shouldn't be changed manually
+            self._dataset_metadata[key] =  {"path": Path(value),
+                                            "format": value.split(".")[-1],
+                                            "size": os.path.getsize(value)} # Size in bytes
+        elif key in self._dataset_metadata:
             self._dataset_metadata[key] = value
         else:
             raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')

@@ -115,7 +115,7 @@ class datasetConfig:
             try:
                 value = DatasetType(value)
             except ValueError:
-                print(f'{value} is not valid; possible choices: {list(QualityDesignation)}')
+                print(f'{value} is not valid; possible choices: {list(DatasetType)}')
                 return None
         if key == "file": # Coded like this because format and size shouldn't be changed manually
             self._dataset_metadata[key] =  {"path": Path(value),

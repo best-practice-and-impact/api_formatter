@@ -6,19 +6,18 @@ from pathlib import Path
 
 class datasetConfig:
     """
-    A class used to store meta data about a dataset.
-    
-    ...
+    A class to store metadata about a dataset.
     
     Attributes
     ----------
     dataset_metadata : dict
-        A dictionary containing all the different fields of the meta data
+        Metadata properties and their values including title,
+        description, and license, among others.
         
     Methods
     -------
     import_from_dict(new_meta_data):
-        Imports meta data from a pre-existing dictionary.
+        Imports metadata from a pre-existing dictionary.
     get(key):
         Get the value of the corresponding key within the meta data.
     set(key, value):
@@ -42,88 +41,114 @@ class datasetConfig:
             "publisher": {"name": "", "href": ""}
         }
             
-    def import_from_dict(self, new_meta_data: dict):
+    def import_from_dict(self, new_metadata: dict):
         """
-        Imports meta data from a pre-existing dictionary.
+        Imports metadata from a pre-existing dictionary. Will not
+        overwrite or empty any values in the existing Class dictionary
+        that are not specified in new_metadata.
 
         Parameters
         ----------
-        new_meta_data : dict
+        new_metadata : dict
             External dictionary to be imported
-        
+
         Raises
         ------
-        KeyError: Raised if a one of keys in the external dictionary isn't part of the meta data dictionary
+        KeyError:
+            If a key in the supplied dictionary isn't contained within
+            the existing class metadata dictionary
         """
-        
-        for key, value in new_meta_data.items():
+        for key, value in new_metadata.items():
             if key in self._dataset_metadata.keys():
                 self.set(key, value)
             else:
-                raise KeyError(f'ERROR: The config fields in the dictonary you are trying to use are incorrect.\nPlease make sure you are using these fields for your config file:{list(self._dataset_metadata.keys())}')
+                raise KeyError(f'ERROR: The config fields in the dictonary you\
+                               are trying to use are incorrect.\nPlease make\
+                               sure you are using only these fields for your\
+                               config file:{list(self._dataset_metadata.keys())}')
 
-                    
-        
     def get(self, key: str):
         """
-        Get the value of the corresponding key within the meta data.
+        Get the value assciated with a key in the metadata.
 
         Parameters
         ----------
         key : str
-            Key used to index meta data
+            Key used to index metadata
 
         Returns
         -------
         obj
-            Value of inputed key
+            Value associated with key
         
         Raises
         ------
         KeyError 
-            Raised if the key inputed is not a field in the meta data
+            If the supplied key is not a key in the metadata dictionary
         """
         if key in self._dataset_metadata:
             return self._dataset_metadata.get(key)
         else:
-            raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
-    
+            raise KeyError(f'{key} is not a config option. Please choose\
+                           from {list(self._dataset_metadata.keys())}')
+
     def set(self, key: str, value: str):
         """
-        Sets the value of the corresponding key within the meta data to a new value.
+        Sets the value of a key within the metadata dictionary
+        to a new value.
 
         Parameters
         ----------
         key : str
-            Key used to index meta data
+            Key used to index metadata
         value : str
-            New meta data vlaue for the corresponding key
+            New metadata value for the corresponding key
 
         Returns
         -------
         None
-            Ends function if the value entered for "type" isn't one of its options
+            If the value for "type" isn't an allowed option.
 
         Raises
         ------
         KeyError
-            Raised if the key inputed is not a field in the meta data
+            If the supplied key is not a key in the metadata dictionary
         """
         if key == "type":
             try:
                 value = DatasetType(value)
             except ValueError:
-                print(f'{value} is not valid; possible choices: {list(QualityDesignation)}')
+                print(f'{value} is not valid; possible choices: {list(DatasetType)}')
                 return None
         if key in self._dataset_metadata:
             self._dataset_metadata[key] = value
         else:
             raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
-        
 
-    #config_path should be raw string not normal string ('\' as separator)
     def load_metadata_from_file(self, config_path: str):
-        """Load configuration from a JSON or YAML file and import it into the metadata."""
+        """
+        Load configuration from a JSON or YAML file and import it into the metadata.
+        
+        Parameters
+        ----------
+        config_path : str (raw)
+            Path to the file to load into the metadata dictionary. Should
+            be supplied as a raw string (r'string') with backslash as a
+            path seperator
+        
+        Returns
+        -------
+        obj
+            The loaded raw metadata
+        
+        Raises
+        ------
+        FileNotFoundError
+            If the file at config_path cannot be found.
+        ValueError
+            If the file at config_path is not .yaml or .json, or if
+            there is an error parsing a .yaml or .json.
+        """
         #check file extension
         format = config_path.split(".")[-1].lower()
         verified_config_path = Path(config_path)
@@ -152,17 +177,16 @@ class datasetConfig:
     
     def export_to_json(self, file_path: str = '/api_formatter/results'):
         """
-        Exports the dataset meta data to a json file.
+        Exports the dataset metadata to a .json file.
 
         Parameters
         ----------
         file_path : str, optional
-            The directory path for where the json file will be stored, by default '/api_formatter/results'
+            The directory path for where the .json file will be stored, by default '/api_formatter/results'
         """
         with open(f'{file_path}/{self._dataset_metadata.get('title')}_metadata.json', 'w') as fp:
             json.dump(self._dataset_metadata, fp)
-        
-
+    
     def __str__(self):
         return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
         

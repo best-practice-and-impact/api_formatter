@@ -1,0 +1,26 @@
+{
+  "dataset_id": "ds001",
+  "edition": "2024",
+  "edition_title": "2024 Edition",
+  "release_date": "2024-12-15T09:00:00Z",
+  "version": 1,
+  "last_updated": "2024-12-01T10:00:00Z",
+  "quality_designation": "EXPERIMENTAL",
+  "usage_note": {
+    "title": "How to interpret",
+    "note": "These are provisional estimates subject to change."
+  },
+  "alert": {
+    "title": "WARNING",
+    "date": "2024-12-01T09:00:00Z",
+    "description": "This edition contains incomplete data for some regions."
+  },
+  "distribution": {
+    "title": "CSV Download",
+    "format": "CSV",
+    "download_url": "https://example.com/data/2024.csv",
+    "byte_size": 204800,
+    "media_type": "TEXT_CSV"
+  }
+}
+

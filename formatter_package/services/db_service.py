@@ -62,7 +62,17 @@ class DatabaseService:
 
 
     def add_file_record(self, record: FileRecord):
-        metadata_json = json.dumps(record.metadata, indent=2, default=custom_serialize) if record.metadata else None
+        # Only serialize the metadata if it exists and is not None
+        metadata_json = None
+        if record.metadata is not None:
+            try:
+                # Create a copy of metadata to avoid modifying the original
+                metadata_copy = record.metadata.copy() if isinstance(record.metadata, dict) else record.metadata
+                metadata_json = json.dumps(metadata_copy, indent=2, default=custom_serialize)
+            except Exception as e:
+                print(f"Warning: Could not serialize metadata: {e}")
+                metadata_json = None
+
         with self.conn:
             cur = self.conn.execute(
                 """INSERT INTO file_records 

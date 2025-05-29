@@ -1,4 +1,6 @@
-# CSV Metadata Processor
+# Metadata Formatter
+
+A command-line tool for managing and formatting metadata with support for JSON files, user authentication, and role-based access control.
 
 
 ## Features
@@ -121,4 +123,4 @@ python -m cli approve 1
 
 ## License
 
-[Specify your license here]
+[I Need to Add our license information here]

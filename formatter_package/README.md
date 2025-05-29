@@ -1,4 +1,4 @@
-# CSV Metadata Processor
+# Metadata Processor
 
 A powerful command-line tool for processing JSON files with metadata management, approval workflows, and export capabilities.
 
@@ -135,4 +135,4 @@ pytest --cov=. tests/
 
 ## License
 
-[Specify your license here]
+[I Need to Specify our license here]

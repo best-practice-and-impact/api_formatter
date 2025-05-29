@@ -14,6 +14,12 @@ class User:
         self.password = password
         self.role = role
 
+    def to_dict(self):
+        return {
+            "username": self.username,
+            "role": self.role.value
+        }
+
     def __repr__(self):
         return f"User(username={self.username!r}, role={self.role.value!r})"
 
@@ -23,5 +29,3 @@ class User:
             Role.APPROVER: {"approve", "upload"},
         }
         return action in permissions.get(self.role, set())
-
-

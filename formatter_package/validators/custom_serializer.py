@@ -3,13 +3,14 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
+
 def custom_serialize(obj, seen=None):
     if seen is None:
         seen = set()
 
     obj_id = id(obj)
     if obj_id in seen:
-        return f"<CircularRef: {type(obj).__name__}>"
+        return f"<CircularRef: {type(obj)._name_}>"
 
     seen.add(obj_id)
 
@@ -30,7 +31,7 @@ def custom_serialize(obj, seen=None):
         return [custom_serialize(i, seen) for i in obj]
     elif hasattr(obj, "_metadata"):
         return custom_serialize(obj.metadata, seen)
-    elif hasattr(obj, "__dict__"):
+    elif hasattr(obj, "_dict_"):
         return custom_serialize(vars(obj), seen)
     else:
-        return obj
+        return str(obj)

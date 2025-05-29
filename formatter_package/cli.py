@@ -12,7 +12,7 @@ from services.export_service import ExportService
 from services.db_service import DatabaseService
 from rich import print as rprint
 from rich.syntax import Syntax
-
+from validators.custom_serializer import custom_serialize
 
 app = typer.Typer()
 db = DatabaseService()
@@ -32,46 +32,52 @@ def get_logged_in_user():
     return user
 
 def preview_and_edit_metadata(record: FileRecord):
-    preview_copy = json.loads(json.dumps(deepcopy(record.metadata), default=str))
-    json_preview = json.dumps(preview_copy, indent=2)
+    preview_copy = deepcopy(record.metadata)
+
+    display_copy = custom_serialize(preview_copy)
+
+    json_preview = json.dumps(display_copy, indent=2, default=custom_serialize)
     syntax = Syntax(json_preview, "json", theme="monokai", line_numbers=True)
     rprint("\n[bold yellow]Metadata Preview:[/bold yellow]")
     rprint(syntax)
 
-    # Ask if the user wants to edit metadata
     if Confirm.ask("\nDo you want to edit metadata now?"):
-        updated_metadata = dict(record.metadata)
+        updated_metadata = deepcopy(display_copy)
+        is_edition = updated_metadata.get("is_edition", "False")
+
         for key in list(updated_metadata.keys()):
             current = updated_metadata[key]
-            raw_input = Prompt.ask(f"{key} [{current}]", default=str(current))
-
             if isinstance(current, dict):
+                rprint(f"[blue]Editing nested field '{key}' (JSON input required):[/blue]")
+                raw_input = Prompt.ask(f"{key} (as JSON)", default=json.dumps(current, indent=2))
                 try:
-                    parsed = ast.literal_eval(raw_input)
-                    if isinstance(parsed, dict):
-                        new_val = parsed
-                    else:
-                        raise ValueError(f"Invalid input for {key}. Expected a dictionary.")
-                except (ValueError, SyntaxError):
-                    rprint(f"[red]Invalid input for {key}. Keeping current value.[/red]")
+                    parsed = json.loads(raw_input)
+                except json.JSONDecodeError:
+                    rprint(f"[red]Invalid JSON for key '{key}'. Skipping update.[/red]")
                     continue
             else:
-                new_val = raw_input
+                raw_input = Prompt.ask(f"{key} [{current}]", default=str(current))
+                try:
+                    parsed = ast.literal_eval(raw_input)
+                except (ValueError, SyntaxError):
+                    parsed = raw_input  # treat as string if parsing fails
 
 
-            updated_metadata[key] = new_val
+            if key == "edition":
+                parsed = str(parsed).strip()
+
+            updated_metadata[key] = parsed
+
+
         rprint("\n[green]Metadata updated.[/green]")
-
-
-        print(updated_metadata)
-
         rprint("\n[green]Metadata updated. Revalidating...[/green]")
         try:
             updated_data = uploader_service.edit_metadata(
                 user=get_logged_in_user(),
                 record=record,
-                new_data=updated_metadata
+                new_data=updated_metadata,
             )
+            updated_data["is_edition"] = is_edition
             record.metadata = updated_data
         except ValueError as e:
             rprint(f"[red]Validation failed: {e}[/red]")
@@ -84,7 +90,8 @@ def handle_upload(file_path: str, is_edition: bool = False):
     try:
         record = uploader_service.upload_edition(
             user=user,
-            file_path=file_path
+            file_path=file_path,
+            is_edition=is_edition
         ) if is_edition else uploader_service.upload_dataset(
             user=user,
             file_path=file_path
@@ -93,10 +100,8 @@ def handle_upload(file_path: str, is_edition: bool = False):
         typer.echo(f"[red]Upload failed: {e}[/red]")
         raise typer.Exit()
 
-    # Preview and edit metadata
-    record.metadata = preview_and_edit_metadata(record)
+    record = preview_and_edit_metadata(record)
 
-    # Ask if the user wants to save it
     if Confirm.ask("Save this upload to the database?"):
         db.add_file_record(record)
         typer.echo(f"[green]Saved: record ID {record.id} with status {record.status}[/green]")
@@ -128,12 +133,10 @@ def login(
     SessionManager.save_session(username=user.username, role=user.role.value)
     typer.echo(f"Logged in as {user.username} with role {user.role.value}")
 
-
 @app.command()
 def logout():
     SessionManager.clear_session()
     typer.echo("Logged out successfully.")
-
 
 @app.command("upload")
 def upload(file_path: str, is_edition: bool = False):
@@ -150,7 +153,6 @@ def upload(file_path: str, is_edition: bool = False):
 
     handle_upload(file_path, is_edition)
 
-
 @app.command()
 def preview(record_id: int):
     record = db.get_file_record(record_id)
@@ -160,17 +162,6 @@ def preview(record_id: int):
 
     rprint(f"[bold green]Previewing Record ID: {record_id}[/bold green]\n")
     preview_and_edit_metadata(record)
-
-@app.command()
-def edit(record_id: int):
-    user = get_logged_in_user()
-    record = db.get_file_record(record_id)
-    if not record:
-        typer.echo("[red]File not found.[/red]")
-        raise typer.Exit()
-
-    record.metadata = preview_and_edit_metadata(record.metadata)
-
     # Ask if the user wants to save changes
     if Confirm.ask("Save updated metadata to database?"):
         db.update_file_record(record)
@@ -228,6 +219,3 @@ fmt: str = typer.Option("json", help="Format",
 
 if __name__ == "__main__":
     app()
-
-
-

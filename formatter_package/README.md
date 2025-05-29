@@ -1,138 +1,126 @@
-# CSV Metadata Processor
+# Metadata Formatter
 
-A powerful command-line tool for processing JSON files with metadata management, approval workflows, and export capabilities.
+A command-line tool for managing and formatting metadata with support for JSON files, user authentication, and role-based access control.
+
 
 ## Features
-- JSON file upload with metadata extraction
-- Interactive metadata editing
-- User role-based access control (Uploader and Approver roles)
-- File approval workflow
-- Multiple export formats (JSON, YAML, HTML)
-- Rich terminal interface with previews
-- Database-backed storage
+
+- Upload and manage JSON files with metadata
+- Interactive metadata preview and editing
+- Role-based access control (Uploader and Approver roles)
+- Export metadata in multiple formats (JSON, YAML, HTML)
+- Secure user authentication
+- Session management
+
 
 ## Installation
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-```
+bash
+pip install -r requirements.txt
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
-
-3. Install the package in development mode:
-```bash
-pip install -e .
-```
-
-This will install the package in "editable" mode, making all modules available in your Python path.
 
 ## Usage
 
 ### User Management
 
-Create a new user with a specific role:
-```bash
+1. Create a new user:
+bash
 python -m cli create-user
-```
-Roles: `UPLOADER` or `APPROVER`
+
+You'll be prompted for:
+- Username
+- Password
+- Role (uploader/approver)
+
+2. Login:
+bash
+python -m cli login
+
+You'll be prompted for your username and password.
+
+3. Logout:
+bash
+python -m cli logout
+
 
 ### File Operations
 
 1. Upload a JSON file:
-```bash
-python -m cli upload <username> <file_path>
-```
-This will:
-- Extract metadata from the CSV
-- Show a preview of the metadata and first 5 rows
-- Allow interactive metadata editing
-- Save the record to the database
+bash
+python -m cli upload path/to/your/file.json
 
-2. Preview a file record:
-```bash
+
+2. Preview file metadata:
+bash
 python -m cli preview <record_id>
-```
-Shows metadata and CSV preview for a specific record.
 
-3. Edit metadata:
-```bash
-python -m cli edit <username> <record_id>
-```
-Allows interactive editing of metadata for an existing record.
 
-4. Approve a file:
-```bash
-python -m cli approve <approver_username> <record_id>
-```
-Only users with the APPROVER role can approve files.
+3. Edit file metadata:
+bash
+python -m cli edit <record_id>
 
-5. Export data:
-```bash
+
+4. Approve a file (requires approver role):
+bash
+python -m cli approve <record_id>
+
+
+5. Export metadata in different formats:
+bash
 python -m cli export <record_id> --fmt <format>
-```
-Available formats:
-- `json`: JSON format
-- `yaml` or `yml`: YAML format
-- `html`: HTML format with formatted output
 
-## Project Structure
+Supported formats:
+- json (default)
+- yaml/yml
+- html
 
-```
-csv_meta_processor/
-├── cli.py              # Main CLI interface
-├── models/            # Data models
-├── services/          # Business logic services
-├── storage/           # Database and file storage
-├── exports/           # Export templates and handlers
-├── metadata/          # Metadata processing
-├── helpers/           # Utility functions
-├── validators/        # Data validation
-├── configs/           # Configuration files
-└── tests/             # Test suite
-```
 
-## Dependencies
+## Examples
 
-- typer: CLI framework
-- rich: Terminal formatting
-- pyyaml: YAML processing
-- jinja2: HTML template rendering
-- python-dateutil: Date handling
-- requests: HTTP requests
-- pytest: Testing framework
+1. Upload and edit a JSON file:
+bash
+# Login first
+python -m cli login
 
-## Testing
+# Upload a file
+python -m cli upload data/example.json
 
-To run the tests for this package, navigate to the project's root directory and use the `pytest` command.
+# Preview the metadata
+python -m cli preview 1
 
-Run all tests:
-```bash
-pytest tests/
-```
+# Edit the metadata
+python -m cli edit 1
 
-Run tests with verbose output:
-```bash
-pytest -v tests/
-```
+# Export as YAML
+python -m cli export 1 --fmt yaml
 
-Run tests and generate a coverage report:
-```bash
-pytest --cov=. tests/
-```
 
-## Contributing
+2. Approve a file (as an approver):
+bash
+# Login as an approver
+python -m cli login
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+# Approve a file
+python -m cli approve 1
+
+
+## Notes
+
+- Only JSON files are supported for upload
+- Metadata editing is interactive and supports dictionary values
+- Exported HTML files are saved in the data directory
+- Session information is stored locally for persistent login
+
+
+## Requirements
+
+- Python 3.7+
+- typer
+- rich
+- pyyaml
+- jinja2
+
 
 ## License
 
-[Specify your license here]
+[I Need to Add our license information here]

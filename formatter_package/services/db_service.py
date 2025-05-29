@@ -57,12 +57,11 @@ class DatabaseService:
         cur = self.conn.execute("SELECT * FROM users WHERE username = ?", (username,))
         row = cur.fetchone()
         if row:
-            return User(username=row["username"], password=row["password"], role=Role(row["role"]))
+            return User(username=row["username"], role=Role(row["role"]), password=row["password"])
         return None
 
 
     def add_file_record(self, record: FileRecord):
-        # Only serialize the metadata if it exists and is not None
         metadata_json = None
         if record.metadata is not None:
             try:
@@ -88,15 +87,22 @@ class DatabaseService:
             record.id = cur.lastrowid
 
     def update_file_record(self, record: FileRecord):
-        metadata_json = json.dumps(record.metadata) if record.metadata else None
+        metadata_json = None
+        if record.metadata is not None:
+            try:
+                # Create a copy of metadata to avoid modifying the original
+                metadata_copy = record.metadata.copy() if isinstance(record.metadata, dict) else record.metadata
+                metadata_json = json.dumps(metadata_copy, indent=2, default=custom_serialize)
+            except Exception as e:
+                print(f"Warning: Could not serialize metadata: {e}")
+                metadata_json = None
         with self.conn:
             self.conn.execute(
                 """UPDATE file_records SET 
-                metadata = ?, status = ?, approved_by = ? WHERE id = ?""",
+                metadata = ?, status = ? WHERE id = ?""",
                 (
                     metadata_json,
                     record.status.value,
-                    record.approved_by.username if record.approved_by else None,
                     record.id
                 )
             )
@@ -106,14 +112,16 @@ class DatabaseService:
         cur = self.conn.execute("SELECT * FROM file_records WHERE id = ?", (record_id,))
         row = cur.fetchone()
         if row:
-            uploader = self.get_user(row["uploader"])
+            upload_user = self.get_user(row["uploader"])
             approved_by = self.get_user(row["approved_by"]) if row["approved_by"] else None
             metadata = json.loads(row["metadata"]) if row["metadata"] else None
-            record = FileRecord(uploader, row["path"])
+            record = FileRecord(upload_user, row["path"])
+            record.uploader = upload_user
             record.id = row["id"]
             record.metadata = metadata
             record.status = UploadStatus(row["status"])
             record.approved_by = approved_by
+
             record.created_at = datetime.fromisoformat(row["created_at"]) if row["created_at"] else None
             return record
         return None

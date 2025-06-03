@@ -11,7 +11,7 @@ The package includes tools to:
 This package helps reduce manual effort, avoid common formatting errors, and speed up the process of getting data API-ready.
 
 ## Installation 
-To get started with the project, follow the steps below. Before installing, make sure you have Git and Python 3.9+ installed on your system. 
+To get started with the project, follow the steps below. Before installing, make sure you have Git and the most recent version of Python available installed on your system. 
 
 1. Clone the repository: 
 

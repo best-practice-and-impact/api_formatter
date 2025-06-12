@@ -26,7 +26,7 @@ cd ons-api-metadata-formatter
 3. Install the required dependencies. You can manually install the required pacakages by running:
 
 ```bash
-pip install PyMAL
+pip install -r requirements.txt
 ```
 
 ## Usage

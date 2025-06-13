@@ -4,7 +4,7 @@ import yaml
 from pathlib import Path
 import os
 
-##TO DO: debug the datetime handling
+
 class datasetConfig:
     """
     Stores, manages, and validates metadata for a dataset, with built-in quality assurance (QA) functionality.

@@ -1,0 +1,108 @@
+{
+  "title": "Edition Metadata Schema",
+  "type": "object",
+  "properties": {
+    "dataset_id": {
+      "type": "string"
+    },
+    "edition": {
+      "type": "string"
+    },
+    "edition_title": {
+      "type": "string"
+    },
+    "release_date": {
+      "type": "datetime"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "last_updated": {
+      "type": "datetime"
+    },
+    "quality_designation": {
+      "type": "string",
+      "enum": [
+        "accredited-official",
+        "official",
+        "official-in-development"
+      ]
+    },
+    "Usage_Note": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": ["title", "note"]
+    },
+    "Alert": {
+      "type": "object",
+      "properties": {
+        "Alerttype": {
+          "type": "string",
+          "enum": [
+            "alert",
+            "correction"
+          ]
+        },
+        "date": {
+          "type": "datetime"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": ["Alerttype", "date", "description"]
+    },
+    "Distribution": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "csv",
+            "sdmx",
+            "xls",
+            "xlsx",
+            "csdb"
+          ]
+        },
+        "download_url": {
+          "type": "string"
+        },
+        "byte_size": {
+          "type": "integer"
+        },
+        "media_type": {
+          "type": "string",
+          "enum": [
+            "text/csv",
+            "application/vnd.sdmx.structurespecficdata+xml",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/plain"
+          ]
+        }
+      },
+      "required": ["title", "format", "download_url", "byte_size", "media_type"]
+    }
+  },
+  "required": [
+    "dataset_id",
+    "edition",
+    "edition_title",
+    "release_date",
+    "version",
+    "last_updated",
+    "Usage_Note",
+    "Alert",
+    "Distribution"
+  ]
+}

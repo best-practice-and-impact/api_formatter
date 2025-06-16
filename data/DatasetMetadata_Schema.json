@@ -1,0 +1,66 @@
+{
+  "title": "Dataset Metadata Config",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "DatasetType": { 
+      "type": "string",
+      "enum": [
+        "filterable",
+        "cantabular_flexible_table",
+        "cantabular_multivariate_table",
+        "static"
+      ]
+    },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "topics": { "type": "array", "items": { "type": "string" } },
+    "license": { "type": "string" },
+    "next_release": { "type": "datetime" },
+    "keywords": { "type": "array", "items": { "type": "string" } },
+    "QMI": {
+      "type": "object",
+      "properties": {
+        "href": { "type": "string" }
+      },
+      "required": ["href"]
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "telephone": { "type": "string" }
+      },
+      "required": ["name", "email"]
+    },
+    "publisher": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "href": { "type": "string" }
+      },
+      "required": ["name", "href"]
+    },
+    "file": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "pathlib.Path" },
+        "format": { "type": "string" },
+        "size": { "type": "integer" }
+      },
+      "required": ["path"]
+    }
+  },
+  "required": [
+    "id",
+    "DatasetType",
+    "title",
+    "description",
+    "topics",
+    "license",
+    "QMI",
+    "publisher",
+    "file"
+  ]
+}

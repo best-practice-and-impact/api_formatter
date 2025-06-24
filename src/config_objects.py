@@ -278,7 +278,7 @@ class editionConfig:
         if key in self._edition_metadata:
             return self._edition_metadata.get(key)
         else:
-            raise KeyError(f'{key} is not a present in the metadata. \
+            raise KeyError(f'{key} is not present in the metadata. \
                            Please choose from {list(self._edition_metadata.keys())}')
     
     def set(self, key: str, value: str):

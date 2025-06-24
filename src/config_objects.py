@@ -64,10 +64,9 @@ class datasetConfig:
             if key in self._dataset_metadata.keys():
                 self.set(key, value)
             else:
-                raise KeyError(f'ERROR: The config fields in the dictonary you\
-                               are trying to use are incorrect.\nPlease make\
-                               sure you are using only these fields for your\
-                               config file:{list(self._dataset_metadata.keys())}')
+                raise KeyError(f"Invalid config key: '{key}'.\n"
+                    f"Allowed keys are: {list(self._dataset_metadata.keys())}"
+                    ) 
 
     def get(self, key: str):
         """
@@ -120,8 +119,9 @@ class datasetConfig:
             try:
                 value = DatasetType(value)
             except ValueError:
-                print(f'{value} is not valid; possible choices: {list(DatasetType)}')
-                return None
+                raise ValueError(
+                    f"Invalid dataset type: '{value}'. "
+                    f"Valid options are: {[t.value for t in DatasetType]}")
         if key == "file": # Coded like this because format and size shouldn't be changed manually
             self._dataset_metadata[key] =  {"path": Path(value),
                                             "format": value.split(".")[-1],
@@ -254,7 +254,7 @@ class editionConfig:
             else:
                 raise KeyError(f'One or more fields in the config dictionary \
                                is invalid.\n Please use only allowed \
-                               fields as keys:{list(self._dataset_metadata.keys())}')
+                               fields as keys:{list(self._edition_metadata.keys())}')
 
     def get(self, key: str):
         """
@@ -306,16 +306,16 @@ class editionConfig:
         if key == "quality_designation":
             try:
                 value = QualityDesignation(value)
-            except ValueError:
-                print(f'{value} is not valid; possible choices: {list(QualityDesignation)}')
-                return None
+            except ValueError: 
+                raise ValueError(
+                    f"{value} is not valid; possible choices: {list(QualityDesignation)}")
             
         if key == "release_date":
             try:
                 value = datetime.strptime(value, "%d/%m/%Y")
             except ValueError:
-                print(f'{value} is the wrong datetime format. Try "dd/mm/yyyy".')
-                return None
+                raise ValueError(f"{value} is the wrong datetime format. Try 'dd/mm/yyyy'.")
+
             
         if key in self._edition_metadata:
             if key == 'alert':
@@ -323,15 +323,21 @@ class editionConfig:
                     self._edition_metadata[key]['type'] = AlertType(value['type'])
                     self._edition_metadata[key]['date'] = datetime.strptime(value['date'], '%d/%m/%Y')
                 except ValueError:
-                    print('There is an error with the supplied alert value.')
-                    return None
+                    raise ValueError(
+                        "There is an error with the supplied alert value." 
+                        "Expected keys: 'type' (valid AlertType), 'date' (format: dd/mm/yyyy)."
+                        )
+
+
             
             if key == 'distribution':
                 try:
                     self._edition_metadata[key]['format'] = DistributionFormat(value['format'])
                 except ValueError:
-                    print(f'{value['format']} is not valid; possible choices: {list(DistributionFormat)}')
-                    return None
+                    raise ValueError(
+                        f"{value['format']} is not valid; possible choices: {[d.value for d in DistributionFormat]}"
+                        )
+
             
             self._edition_metadata[key] = value
         

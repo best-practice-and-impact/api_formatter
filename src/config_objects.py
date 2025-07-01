@@ -87,7 +87,7 @@ class datasetConfig:
         if not isinstance(self._schema , dict):
             raise TypeError("Schema must be a dict or a JSON file that parses to a dict.")
             
-    def import_from_dict(self, new_meta_data: dict):
+    def import_from_dict(self, new_metadata: dict):
         """
         Import metadata from a pre-existing dictionary, updating only recognized fields.
 
@@ -101,15 +101,14 @@ class datasetConfig:
         KeyError
             If a key in the external dictionary is not part of the metadata dictionary.
         """
-        
-        for key, value in new_meta_data.items():
+        for key, value in new_metadata.items():
             if key in self._dataset_metadata.keys():
                 self.set(key, value)
             else:
-                raise KeyError(f'ERROR: The config fields in the dictonary you are trying to use are incorrect.\nPlease make sure you are using these fields for your config file:{list(self._dataset_metadata.keys())}')
+                raise KeyError(f"Invalid config key: '{key}'.\n"
+                    f"Allowed keys are: {list(self._dataset_metadata.keys())}"
+                    ) 
 
-                    
-        
     def get(self, key: str):
         """
         Get the value of the corresponding key within the metadata.
@@ -308,8 +307,7 @@ class datasetConfig:
         """
         with open(f"{file_path}/{self._dataset_metadata.get('title')}_metadata.json", 'w') as fp:
             json.dump(self._dataset_metadata, fp)
-        
-
+    
     def __str__(self):
         """
         Return a string representation of the dataset, including title and ID.
@@ -575,13 +573,13 @@ class editionConfig:
         if not isinstance(self._schema , dict):
             raise TypeError("Schema must be a dict or a JSON file that parses to a dict.")
     
-    def import_from_dict(self, new_meta_data: dict):
+    def import_from_dict(self, new_metadata: dict):
         """
         Import metadata from a user-provided dictionary, validating top-level keys and values.
 
         Parameters
         ----------
-        new_meta_data : dict
+        new_metadata : dict
             Dictionary containing metadata fields and values to import.
 
         Raises
@@ -591,7 +589,7 @@ class editionConfig:
         KeyError
             If any key in new_meta_data is not a valid metadata field.
         """
-        if not isinstance(new_meta_data, dict):
+        if not isinstance(new_metadata, dict):
             raise TypeError("Input must be a dictionary.")
         
         ##just import the dictionary without checking the metadata instance
@@ -599,7 +597,7 @@ class editionConfig:
 
 
         #we assign all available values and leave other fields as None which was initialised
-        for key, value in new_meta_data.items():
+        for key, value in new_metadata.items():
             if key in self._edition_metadata.keys():
                 self.set(key, value)
             else:
@@ -627,7 +625,8 @@ class editionConfig:
         if key in self._edition_metadata:
             return self._edition_metadata.get(key)
         else:
-            raise KeyError(f'{key} is not a config option. Please choose from {list(self._edition_metadata.keys())}')
+            raise KeyError(f'{key} is not present in the metadata. \
+                           Please choose from {list(self._edition_metadata.keys())}')
     
     
 
@@ -775,7 +774,6 @@ class editionConfig:
         if not verified_config_path.exists():
             raise FileNotFoundError(f'Configuration file not found: {verified_config_path}')
         
-        #load the file content based on format
         try:
             with open(verified_config_path, 'r') as file:
                 if format == 'json':
@@ -796,7 +794,7 @@ class editionConfig:
     
     def export_to_json(self, file_path: str = '/api_formatter/results'):
         """
-        Exports the edition meta data to a json file.
+        Exports the edition metadata to a .json file.
 
         Parameters
         ----------
@@ -805,7 +803,6 @@ class editionConfig:
         """
         with open(f"{file_path}/{self._edition_metadata.get('edition_title')}_metadata.json", 'w') as fp:
             json.dump(self._edition_metadata, fp)
-    
     
     def __str__(self):
         """

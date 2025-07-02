@@ -515,7 +515,7 @@ class datasetConfig:
         """
         return getattr(self,'errors',[])
 
-    def preview_metadata(self, input: None|dict = None, nesting: int = 0):
+    def preview_yaml(self, input: None|dict = None, nesting: int = 0):
         """
         Print out the contents of the metadata in a human-readable
         format to the console.
@@ -533,16 +533,48 @@ class datasetConfig:
         -------
         None
         """
+        output = ""
         tabs = nesting * "\t"
+
         if input is None:
             input = self._dataset_metadata
-        for k, v  in input.items():
+
+        for k, v in input.items():
             if isinstance(v, dict):
-                print(f"{tabs}{k}:" )
-                self.preview_metadata(v, nesting + 1)
+                output += f"{tabs}{k}:\n"
+                output += self.preview_yaml(v, nesting + 1)
             else:
-                print(f"{tabs}{k}: {v}")
+                output += (f"{tabs}{k}: {v}\n")
+        
+        return output
+    
+    # TODO:
+    # def preview_json(self, input: None|dict = None, nesting: int = 0):
+
+    def save_preview(self, output_filepath):
+        """
+        Save the contents of the metadata to output_filepath in yaml or json.
+
+        Parameters
+        ----------
+        output_filepath: str
+            The output path to save the file to, e.g. "D:/folder/filename.yaml".
+
+        Returns
+        -------
+        None
+        """
+        if output_filepath.split(".")[-1].lower() not in ["json", "yaml"]:
+            raise ValueError(f"Output filepath should end in .json or .yaml")
+
+        with open(output_filepath, "w+") as file:
+            if output_filepath.split(".")[-1] == "json":
+                # file.write(self.preview_json())
+            elif output_filepath.split(".")[-1] == "yaml":
+                file.write(self.preview_yaml())
+        
         return None
+
 
 class editionConfig:
     """

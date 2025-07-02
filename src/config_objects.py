@@ -317,7 +317,7 @@ class datasetConfig:
         str
             String representation of the dataset.
         """
-        return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
+        return str(self._dataset_metadata)
 
 
     def load_json(self,file_path:str):
@@ -515,10 +515,17 @@ class datasetConfig:
         """
         return getattr(self,'errors',[])
 
-
-#####
-
-   
+    def preview_metadata(self, input = None, nesting = 0):
+        tabs = nesting * "\t"
+        if input is None:
+            input = self._dataset_metadata
+        for k, v  in input.items():
+            if isinstance(v, dict):
+                print(f"{tabs}{k}:" )
+                self.preview_metadata(v, nesting + 1)
+            else:
+                print(f"{tabs}{k}: {v}")
+        return None
 
 class editionConfig:
     """

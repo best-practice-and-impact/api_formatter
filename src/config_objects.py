@@ -517,8 +517,7 @@ class datasetConfig:
 
     def preview_yaml(self, input: None|dict = None, nesting: int = 0):
         """
-        Print out the contents of the metadata in a human-readable
-        format to the console.
+        Preview the metadata dictionary as in yaml format.
 
         Parameters
         ----------
@@ -565,7 +564,7 @@ class datasetConfig:
         None
         """
         if output_filepath.split(".")[-1].lower() not in ["json", "yaml"]:
-            raise ValueError(f"Output filepath should end in .json or .yaml")
+            raise ValueError("Output filepath should end in .json or .yaml")
 
         with open(output_filepath, "w+") as file:
             if output_filepath.split(".")[-1] == "json":

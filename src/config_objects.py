@@ -317,7 +317,7 @@ class datasetConfig:
         str
             String representation of the dataset.
         """
-        return str(self._dataset_metadata)
+        return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
 
 
     def load_json(self,file_path:str):
@@ -515,7 +515,24 @@ class datasetConfig:
         """
         return getattr(self,'errors',[])
 
-    def preview_metadata(self, input = None, nesting = 0):
+    def preview_metadata(self, input: None|dict = None, nesting: int = 0):
+        """
+        Print out the contents of the metadata in a human-readable
+        format to the console.
+
+        Parameters
+        ----------
+        input : None | dict
+            Dictionary of values to iterate over. Should be None if to look at
+            the metadata dictionary, but needed in the function for the recursion.
+        nesting : int
+            Current level of nesting in the input dictionary. Should be 0 to look
+            at the metadata dictionary, needed in the function for recursion.
+
+        Returns
+        -------
+        None
+        """
         tabs = nesting * "\t"
         if input is None:
             input = self._dataset_metadata

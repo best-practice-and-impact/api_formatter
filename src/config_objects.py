@@ -550,30 +550,6 @@ class datasetConfig:
     # TODO:
     # def preview_json(self, input: None|dict = None, nesting: int = 0):
 
-    def save_preview(self, output_filepath):
-        """
-        Save the contents of the metadata to output_filepath in yaml or json.
-
-        Parameters
-        ----------
-        output_filepath: str
-            The output path to save the file to, e.g. "D:/folder/filename.yaml".
-
-        Returns
-        -------
-        None
-        """
-        if output_filepath.split(".")[-1].lower() not in ["json", "yaml"]:
-            raise ValueError("Output filepath should end in .json or .yaml")
-
-        with open(output_filepath, "w+") as file:
-            if output_filepath.split(".")[-1] == "json":
-                # file.write(self.preview_json())
-            elif output_filepath.split(".")[-1] == "yaml":
-                file.write(self.preview_yaml())
-        
-        return None
-
 
 class editionConfig:
     """

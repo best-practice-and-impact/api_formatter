@@ -23,7 +23,7 @@ git clone https://github.com/best-practice-and-impact/ons-api-metadata-formatter
 ```bash
 cd ons-api-metadata-formatter 
 ```
-3. Install the required dependencies. You can manually install the required pacakages by running:
+3. Install the required dependencies. You can manually install the required packages by running:
 
 ```bash
 pip install -r requirements.txt

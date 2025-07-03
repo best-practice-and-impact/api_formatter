@@ -4,6 +4,7 @@ import yaml
 from pathlib import Path
 import os
 from typing import Union, Optional
+import pprint
 
 
 class datasetConfig:
@@ -515,41 +516,30 @@ class datasetConfig:
         """
         return getattr(self,'errors',[])
 
-    def preview_yaml(self, input: None|dict = None, nesting: int = 0):
+    def preview(self, format):
         """
-        Preview the metadata dictionary as in yaml format.
+        Print out the metadata to the console as in yaml or json format.
 
         Parameters
         ----------
-        input : None | dict
-            Dictionary of values to iterate over. Should be None if to look at
-            the metadata dictionary, but needed in the function for the recursion.
-        nesting : int
-            Current level of nesting in the input dictionary. Should be 0 to look
-            at the metadata dictionary, needed in the function for recursion.
-
+        format: str
+            The format to preview the metadata - should be yaml or json.
+            Raises ValueError if a different value is supplied.
+        
         Returns
         -------
         None
-        """
-        output = ""
-        tabs = nesting * "\t"
-
-        if input is None:
-            input = self._dataset_metadata
-
-        for k, v in input.items():
-            if isinstance(v, dict):
-                output += f"{tabs}{k}:\n"
-                output += self.preview_yaml(v, nesting + 1)
-            else:
-                output += (f"{tabs}{k}: {v}\n")
         
-        return output
-    
-    # TODO:
-    # def preview_json(self, input: None|dict = None, nesting: int = 0):
+        """
+        if format not in ["yaml", "json"]:
+            raise ValueError("Preview format should be 'yaml' or 'json'")
 
+        elif format == "json":
+            print(json.dumps(self._dataset_metadata, indent=4))
+        elif format == "yaml":
+            print(yaml.dump(self._dataset_metadata, indent=4))
+        
+        return None
 
 class editionConfig:
     """

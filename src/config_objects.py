@@ -2,7 +2,6 @@ import datetime
 import json
 import yaml 
 from pathlib import Path
-import os
 from typing import Union, Optional
 
 
@@ -515,10 +514,30 @@ class datasetConfig:
         """
         return getattr(self,'errors',[])
 
+    def preview(self, format):
+        """
+        Print out the metadata to the console as in yaml or json format.
 
-#####
+        Parameters
+        ----------
+        format: str
+            The format to preview the metadata - should be yaml or json.
+            Raises ValueError if a different value is supplied.
+        
+        Returns
+        -------
+        None
 
-   
+        """
+        if format not in ["yaml", "json"]:
+            raise ValueError("Preview format should be 'yaml' or 'json'")
+
+        elif format == "json":
+            print(json.dumps(self._dataset_metadata, indent=4))
+        elif format == "yaml":
+            print(yaml.dump(self._dataset_metadata, indent=4))
+        
+        return None
 
 class editionConfig:
     """

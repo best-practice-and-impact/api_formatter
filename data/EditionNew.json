@@ -1,0 +1,65 @@
+{
+  "metadata": "Edition",
+  "type": "object",
+  "properties": {
+    "edition": {
+      "type": "string"
+    },
+    "edition_title": {
+      "type": "string"
+    },
+    "quality_designation": {
+      "type": "string",
+      "enum": [
+        "accredited-official",
+        "official",
+        "official-in-development"
+      ]
+    },
+    "usage_notes": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "note": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["title", "note"]
+    },
+    "alerts": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [ "alert", "correction" ]
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": ["type", "description"]
+    },
+    "distributions": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["csv", "sdmx", "xls", "xlsx", "csdb"]
+        }
+      },
+      "required": ["title", "format"]
+    }
+  },
+  "required": [
+    "edition",
+    "edition_title",
+    "distributions"
+  ]
+}

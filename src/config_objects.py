@@ -5,7 +5,10 @@ from pathlib import Path
 import os
 from typing import Union, Optional
 
-#TO DO: check out the alert type if it conflicts with the schema data type
+
+##Important Notes:
+#We can change the schema (data) "type" into "dataType" because we have Edition.alert.type field in the schema so there might be potential issue in QA. I created a CombinedSchema2 but we can keep using CombinedSchem until we find a relevant bug
+# Although Edition.alert.type is enum with defined list of words , the value in some examples is empty ("") which can be interpreted as NO ALERT. We added "" to its schema enum 
 
 #An inistialisation with default values will affect the QA functionality because empty fields filled with default values with the correct format
 #default values were change into None to mark them as incomplete for QA
@@ -290,7 +293,7 @@ class MetadataConfig:
         ----------
         config_path : str
             Path to the configuration file (should be .json, .yaml, or .yml).
-            This should be raw string not normal string ('\' as separator preferably)
+            This should be raw string not normal string (r'\' as separator preferably)
 
         Returns
         -------
@@ -309,7 +312,7 @@ class MetadataConfig:
         verified_config_path = Path(config_path)
         
         if not verified_config_path.exists():
-            raise FileNotFoundError(f'Configuration file not found: {verified_config_path}')
+            raise FileNotFoundError(f"Configuration file not found: {verified_config_path}")
         
         #load the file content based on format
         try:
@@ -549,3 +552,4 @@ class MetadataConfig:
             List of validation error messages, or an empty list if none exist.
         """
         return getattr(self,'errors',[])
+

@@ -2,33 +2,33 @@
   "type": "object",
   "properties": {
     "Dataset": {
-      "type": "object",
+      "dataType": "object",
       "properties": {
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "topics": { "type": "array", "items": { "type": "string" } },
+        "id": { "dataType": "string" },
+        "title": { "dataType": "string" },
+        "description": { "dataType": "string" },
+        "topics": { "dataType": "array", "items": { "dataType": "string" } },
         "qmi": {
-          "type": "object",
+          "dataType": "object",
           "properties": {
-            "href": { "type": "string" }
+            "href": { "dataType": "string" }
           },
           "required": ["href"]
         },
         "contacts": {
-          "type": "object",
+          "dataType": "object",
           "properties": {
-            "name": { "type": "string" },
-            "email": { "type": "string" },
-            "telephone": { "type": "string" }
+            "name": { "dataType": "string" },
+            "email": { "dataType": "string" },
+            "telephone": { "dataType": "string" }
           },
           "required": ["name", "email"]
         },
         "publisher": {
-          "type": "object",
+          "dataType": "object",
           "properties": {
-            "name": { "type": "string" },
-            "href": { "type": "string" }
+            "name": { "dataType": "string" },
+            "href": { "dataType": "string" }
           }
         }
       },
@@ -42,12 +42,12 @@
       ]
     },
     "Edition": {
-      "type": "object",
+      "dataType": "object",
       "properties": {
-        "edition": { "type": "string" },
-        "edition_title": { "type": "string" },
+        "edition": { "dataType": "string" },
+        "edition_title": { "dataType": "string" },
         "quality_designation": {
-          "type": "string",
+          "dataType": "string",
           "enum": [
             "accredited-official",
             "official",
@@ -55,30 +55,30 @@
           ]
         },
         "usage_notes": {
-          "type": "object",
+          "dataType": "object",
           "properties": {
-            "title": { "type": "array", "items": { "type": "string" } },
-            "note": { "type": "array", "items": { "type": "string" } }
+            "title": { "dataType": "array", "items": { "dataType": "string" } },
+            "note": { "dataType": "array", "items": { "dataType": "string" } }
           },
           "required": ["title", "note"]
         },
         "alerts": {
-          "type": "object",
+          "dataType": "object",
           "properties": {
             "type": {
-              "type": "string",
+              "dataType": "string",
               "enum": [ "alert", "correction" ]
             },
-            "description": { "type": "string" }
+            "description": { "dataType": "string" }
           },
           "required": ["type", "description"]
         },
         "distributions": {
-          "type": "object",
+          "dataType": "object",
           "properties": {
-            "title": { "type": "string" },
+            "title": { "dataType": "string" },
             "format": {
-              "type": "string",
+              "dataType": "string",
               "enum": ["csv", "sdmx", "xls", "xlsx", "csdb"]
             }
           },

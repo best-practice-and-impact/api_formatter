@@ -1,0 +1,39 @@
+{
+    "Dataset": {
+        "id": "retail-sales-index",
+        "title": "CPSA - Retail Sales Index: Value of retail sales at current prices, seasonally adusted",
+        "description": "A series of retail sales data for Great Britain in value and volume terms, seasonally and non-seasonally adjusted.",
+        "qmi": {
+            "href": "https://www.ons.gov.uk/businessindustryandtrade/retailindustry/methodologies/retailsalesindexrsiqmi"
+        },
+        "topics": ["economic indicators",  "retail sales"],
+        "contacts": {
+            "name": "Retail Sales team",
+            "email": "retail.sales.enquiries@ons.gov.uk",
+            "telephone": "+44 1633 455602"
+        },
+        "publisher": {
+            "name": "ONS",
+            "href": "https://www.gov.uk/government/organisations/office-for-national-statistics"
+        }
+    },
+    "Edition": {
+        "edition": "may-2025",
+        "edition_title": "",
+        "quality_designation": "accredited-official",
+        "usage_notes": {
+            "title": ["Note 1", "Note 2"],
+            "note": ["Note 1: Predominantly automotive fuel also includes sale of fuel by supermarkets",
+                "Note 2: Part of the Predominately non-food stores category"]
+        },
+        "alerts": {
+            "type": "",
+            "description": ""
+        },
+        "distributions": {
+            "title": "mainreferencetables",
+            "format": "xlsx"
+        }
+    }
+}
+

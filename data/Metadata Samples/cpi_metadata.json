@@ -1,0 +1,40 @@
+{
+    "Dataset": {
+        "id": "consumer-price-inflation-tables",
+        "title": "CPIH, CPI & RPI indices: the latest three years",
+        "description": "Measures of monthly UK inflation data including CPIH, CPI and RPI. These tables complement the consumer price inflation time series dataset.",
+        "qmi": {
+            "href": "https://www.ons.gov.uk/economy/inflationandpriceindices/methodologies/consumerpricesindicestechnicalmanual2019"
+        },
+        "topics": ["Consumer price index", "economic indicators", "Inflation"],
+        "contacts": {
+            "name": "Consumer Price Inflation team",
+            "email": "cpi@ons.gov.uk",
+            "telephone": "+44 1633 456900"
+        },
+        "publisher": {
+            "name": "ONS",
+            "href": "https://www.gov.uk/government/organisations/office-for-national-statistics"
+        }
+    },
+    "Edition": {
+        "edition": "may-2025",
+        "edition_title": "",
+        "quality_designation": "accredited-official",
+        "usage_notes": {
+            "title": ["1", "2", "3"],
+            "note": ["1: From the release of January consumer price inflation data on 16 February 2016, CPIH and CPI indices have been re-referenced and published with 2015=100.\nFull historic series for each of the re-referenced indices are available for users to view or download.\nRegular re-referencing of indices is methodological good practice as it avoids rounding issues that can arise from small index values.\nPlease note that re-referencing does not impact on published inflation rates, although when using the indices to calculate inflation rates, \nit is important to use indices that are referenced on the same year. Re-referencing does not impact on RPI.\nFor more information, please contact cpi@ons.gov.uk.",
+                "2: More detailed CPIH, CPI and RPI data are available at: \nhttp://www.ons.gov.uk",
+                "3: The Retail Prices Index and its derivatives do not meet the required standards \nfor designation as accredited official statistics. A full report can be found at: \nhttp://www.statisticsauthority.gov.uk/"]
+        },
+        "alerts": {
+            "type": "correction",
+            "description": "05 June 2025\nAn error has been identified in an extract of the licensed vehicles data provided to the Office for National Statistics (ONS) by the Department for Transport (DfT), which is used to calculate the April 2025 Vehicle Excise Duty (VED) component of consumer prices inflation. The incorrect data overstate the number of vehicles subject to VED rates applicable in the first year of registration.\nThis has the effect of overstating the headline Consumer Prices Index including owner occupiers’ housing costs (CPIH), the Consumer Prices Index (CPI), and Retail Prices Index (RPI) annual rate of change by 0.1 percentage points for the published April 2025 figure only. No other periods are affected. In line with our consumer prices revisions policy, these statistics will not be amended.\nThe ONS will be using the correctly weighted data from May 2025’s figures onwards. The DfT’s published official statistics are unaffected.\nThis error is isolated to one component dataset that is used to calculate the VED index. However, the ONS is reviewing its quality assurance processes for external data sources in light of this issue.\nPlease see the table Impact of vehicle excise duty error on headline UK consumer inflation, April 2025 for more detail."
+        },
+        "distributions": {
+            "title": "consumerpriceinflationdetailedreferencetables",
+            "format": "xlsx"
+        }
+    }
+}
+

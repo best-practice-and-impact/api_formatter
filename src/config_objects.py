@@ -5,16 +5,44 @@ from pathlib import Path
 from typing import Union, Optional
 
 
-class datasetConfig:
+##Important Notes:
+#We can change the schema (data) "type" into "dataType" because we have Edition.alert.type field in the schema so there might be potential issue in QA. I created a CombinedSchema2 but we can keep using CombinedSchem until we find a relevant bug
+# Although Edition.alert.type is enum with defined list of words , the value in some examples is empty ("") which can be interpreted as NO ALERT. We added "" to its schema enum 
+
+#An inistialisation with default values will affect the QA functionality because empty fields filled with default values with the correct format
+#default values were change into None to mark them as incomplete for QA
+COMBINED_DEFAULT = {
+    "Dataset": {
+        "id": None,
+        "title": None,
+        "description": None,
+        "topics": [],
+        "qmi": {"href": None},
+        "contacts": {"name": None, "email": None, "telephone": None},
+        "publisher": {"name": None, "href": None}
+    },
+    "Edition": {
+        "edition": None,
+        "edition_title": None,
+        "quality_designation": None,
+        "usage_notes": {"title": [], "note": []},
+        "alerts": {"type": None, "description": None},
+        "distributions": {"title": None, "format": None}
+    }
+}
+
+
+
+
+class MetadataConfig:
     """
     Stores, manages, and validates metadata for a dataset, with built-in quality assurance (QA) functionality.
-
     This class enables storage, retrieval, and modification of dataset metadata, and supports validation against a JSON schema.
     It is designed to facilitate both programmatic and human-readable QA workflows.
 
     Attributes
     ----------
-    _dataset_metadata : dict
+    _metadata : dict
         Dictionary containing all defined fields for the dataset metadata, initialized with mostly None or empty values.
     _schema : dict
         The JSON schema (as a dictionary) used for validating the metadata.
@@ -23,15 +51,15 @@ class datasetConfig:
 
     Methods
     -------
-    import_from_dict(new_meta_data)
+    import_from_dict(new_metadata)
         Imports metadata from an external dictionary, updating only recognized fields.
     get(key)
         Retrieves the value associated with the specified metadata key.
-    set(key, value)
-        Sets the value for the specified metadata key, with type enforcement for certain keys.
+    set(nested_path, value)
+        Sets the value for the specified metadata key, supporting nested paths.
     load_metadata_from_file(config_path)
         Loads and imports metadata from a JSON or YAML file.
-    export_to_json(file_path)
+    export_to_json(title, file_path)
         Exports the current metadata to a JSON file.
     load_json(file_path)
         Loads and parses a JSON file from disk, returning a dictionary.
@@ -40,46 +68,34 @@ class datasetConfig:
     validate(metadata=None, schema=None, path="")
         Recursively validates metadata against the schema, collecting errors.
     print_QA_errors()
-        Prints validation errors in a human-readable format (does not run validation automatically).
+        Prints validation errors in a human-readable format.
     get_errors()
-        Returns the list of errors from the last validation, or an empty list if none.
+        Returns the list of errors from the last validation, or an empty list if none exist.
 
-    Example
-    -------
-    >>> cfg = datasetConfig("schema.json")
+    Examples
+    --------
+    >>> cfg = MetadataConfig("schema.json", COMBINED_DEFAULT)
     >>> cfg.import_from_dict({"title": "Sample", "type": "Research"})
     >>> cfg.validate()
     >>> cfg.print_QA_errors()
     """
-    def __init__(self,schema:Union[str, dict]):
+    def __init__(self,schema:Union[str, dict], default_metadata):
         """
-        Initializes a datasetConfig instance with default metadata fields and loads the schema for validation.
+        Initializes a MetadataConfig instance with default metadata fields and loads the schema for validation.
 
-        Args:
-            schema (Union[str, dict]): File path to a JSON schema, or a dictionary representing the schema.
-            If the schema was previously efined, the file can be retrived from data folder
+        Parameters
+        ----------
+        schema : Union[str, dict]
+            File path to a JSON schema, or a dictionary representing the schema.
+            If the schema was previously defined, the file can be retrieved from the data folder.
 
-        Raises:
-            TypeError: If the loaded schema object is not a dictionary.
+        Raises
+        ------
+        TypeError
+            If the loaded schema object is not a dictionary.
         """
-        #An inistialisation with default values will affect the QA functionality because empty fields filled with default values with the correct format
-        #default values were change into None to mark them as incomplete for QA
-        self._dataset_metadata = {
-            "id": None,
-            "DatasetType": None,
-            "title": None,
-            "description": None,
-            #not sure if we replace the empty array with None however the QA will check the items in the array
-            "topics": [],
-            #this value might be repeated in next versions so keep it for now
-            "license": "Open Government License v3.0",
-            "next_release": None,
-            "keywords": [],
-            "QMI": {"href": None},
-            "contact": {"name": None, "email": None, "telephone": None},
-            "publisher": {"name": None, "href": None},
-            "file": {"path": None, "format": None, "size": None}
-        }
+        
+        self._metadata = default_metadata.copy()
         #If it's a file path, load it. Otherwise, assume it's already a dict.
         self._schema = self.load_json(schema) if isinstance(schema, str) else schema
         #Defensive: check types after assignment
@@ -92,25 +108,25 @@ class datasetConfig:
 
         Parameters
         ----------
-        new_meta_data : dict
+        new_metadata : dict
             External dictionary to be imported.
-        
+
         Raises
         ------
         KeyError
             If a key in the external dictionary is not part of the metadata dictionary.
         """
         for key, value in new_metadata.items():
-            if key in self._dataset_metadata.keys():
+            if key in self._metadata.keys():
                 self.set(key, value)
             else:
                 raise KeyError(f"Invalid config key: '{key}'.\n"
-                    f"Allowed keys are: {list(self._dataset_metadata.keys())}"
+                    f"Allowed keys are: {list(self._metadata.keys())}"
                     ) 
 
     def get(self, key: str):
         """
-        Get the value of the corresponding key within the metadata.
+        Retrieve the value of the corresponding key within the metadata.
 
         Parameters
         ----------
@@ -132,43 +148,64 @@ class datasetConfig:
 
 
         #we assign all available values and leave other fields as None which was initialised
-        if key in self._dataset_metadata:
-            return self._dataset_metadata.get(key)
+        if key in self._metadata:
+            return self._metadata.get(key)
         else:
-            raise KeyError(f'{key} is not a config option. Please choose from {list(self._dataset_metadata.keys())}')
-    
-    #values for nested field should be dictionary
-    def set(self, key: str, value, schema=None):
+            raise KeyError(f'{key} is not a config option. Please choose from {list(self._metadata.keys())}')
+
+    def set(self, nested_path: str, value):
         """
-        Set or update the value for a specific field in the edition metadata, with schema validation.
+        Set or update the value for a specific field in the metadata, supporting nested paths.
 
         Parameters
         ----------
-        key : str
-            Metadata field to update.
+        nested_path : str
+            Metadata field path to update, using dot notation for nested fields (e.g., "contacts.email").
         value : object
             New value for the field.
-            Values for nested field should be dictionary
-        schema : dict, optional
-            Schema or schema subsection for validation (default: uses instance schema).
 
         Returns
         -------
-        object or None
-            Validated value if successful, else None (if validation fails).
+        object
+            Validated value if successful.
+
+        Raises
+        ------
+        ValueError
+            If validation fails for the provided value.
+        KeyError
+            If a key in the path is not valid according to the schema.
         """
-        if schema is None:
-            schema=self._schema["properties"]
-        
-        validated_value=self.initial_validate_and_build(key, value, schema)
-        if validated_value is not None:
-            self._dataset_metadata[key] = validated_value
-            return validated_value
-        return None
-    
+        #If users accidentally include spaces in the path (e.g., "contacts. email"), it could cause hard-to-debug issues.
+        keys=[key.strip() for key in nested_path.split(".")]
+        current_metadata=self._metadata
+        current_schema=self._schema.get("properties",{})
+        for i, key in enumerate(keys):
+            if key not in current_metadata:
+                    current_metadata[key]={}
+            # Final key: validate and set
+            if i==len(keys)-1:
+                validated_value=self.initial_validate_and_build(key, value, current_schema)
+                if validated_value is not None:
+                    current_metadata[key] = validated_value             
+                else:
+                    raise ValueError(f"Validation failed for {key} with value: {value}")
+            # Intermediate key: go deeper 
+            else:
+                # Intermediate key: go deeper
+                if key not in current_schema["properties"]:
+                    raise KeyError(f"'{key}' is not a valid field in the schema.")
+                # Ensure the current key has a 'properties' attribute before proceeding
+                if "properties" not in current_schema[key]:
+                    raise KeyError(f"'{key}' does not have nested properties in the schema.")
+                current_metadata=current_metadata[key]
+                #properties for other fields inside the current field
+                current_schema=current_schema[key]["properties"]
+        return validated_value
+
     def initial_validate_and_build(self,key: str, value, schema):
         """
-        Recursively validate a value against the schema for the setter (supports enums, dates, and nested objects).
+        Recursively validate a value against the schema (supports enums, dates, and nested objects).
 
         Parameters
         ----------
@@ -255,7 +292,7 @@ class datasetConfig:
         ----------
         config_path : str
             Path to the configuration file (should be .json, .yaml, or .yml).
-            This should be raw string not normal string ('\' as separator preferably)
+            This should be raw string not normal string (r'\' as separator preferably)
 
         Returns
         -------
@@ -274,7 +311,7 @@ class datasetConfig:
         verified_config_path = Path(config_path)
         
         if not verified_config_path.exists():
-            raise FileNotFoundError(f'Configuration file not found: {verified_config_path}')
+            raise FileNotFoundError(f"Configuration file not found: {verified_config_path}")
         
         #load the file content based on format
         try:
@@ -290,12 +327,12 @@ class datasetConfig:
         except yaml.YAMLError as e:
             raise ValueError(f'Error parsing YAML file: {e}')
     
-        # it only validates input dictionary and updates the _dataset_metadata attribute of the instance
+        # it only validates input dictionary and updates the metadata attribute of the instance
         self.import_from_dict(loaded_raw_metadata)
 
         return loaded_raw_metadata
     
-    def export_to_json(self, file_path: str = '/api_formatter/results'):
+    def export_to_json(self,title, file_path: str = '/api_formatter/results'):
         """
         Export the dataset metadata to a JSON file.
 
@@ -304,19 +341,20 @@ class datasetConfig:
         file_path : str, optional
             The directory path for where the JSON file will be stored (default: '/api_formatter/results').
         """
-        with open(f"{file_path}/{self._dataset_metadata.get('title')}_metadata.json", 'w') as fp:
-            json.dump(self._dataset_metadata, fp)
-    
-    def __str__(self):
-        """
-        Return a string representation of the dataset, including title and ID.
+        #changed title instance with the title method instance avoding any conflict with the new metadata fields
+        with open(f"{file_path}/{title}_metadata.json", 'w') as fp:
+            json.dump(self._metadata, fp)
+    #removing this because we might not have title or id key in new metadata fields
+    # def __str__(self):
+    #     """
+    #     Return a string representation of the dataset, including title and ID.
 
-        Returns
-        -------
-        str
-            String representation of the dataset.
-        """
-        return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
+    #     Returns
+    #     -------
+    #     str
+    #         String representation of the dataset.
+    #     """
+    #     return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
 
 
     def load_json(self,file_path:str):
@@ -442,7 +480,7 @@ class datasetConfig:
             List of validation error messages.
         """
         if metadata is None:
-            metadata=self._dataset_metadata
+            metadata=self._metadata
         if schema is None:
             schema=self._schema 
         #If you use a local variable like errors = [] inside validate and pass it along or return it, 
@@ -513,521 +551,4 @@ class datasetConfig:
             List of validation error messages, or an empty list if none exist.
         """
         return getattr(self,'errors',[])
-
-    def preview(self, format):
-        """
-        Print out the metadata to the console as in yaml or json format.
-
-        Parameters
-        ----------
-        format: str
-            The format to preview the metadata - should be yaml or json.
-            Raises ValueError if a different value is supplied.
-        
-        Returns
-        -------
-        None
-
-        """
-        if format not in ["yaml", "json"]:
-            raise ValueError("Preview format should be 'yaml' or 'json'")
-
-        elif format == "json":
-            print(json.dumps(self._dataset_metadata, indent=4))
-        elif format == "yaml":
-            print(yaml.dump(self._dataset_metadata, indent=4))
-        
-        return None
-
-class editionConfig:
-    """
-    A class for storing and managing metadata about individual dataset editions, with built-in schema validation,
-    import/export utilities, and methods for updating and retrieving fields.
-    
-    Attributes
-    ----------
-    _edition_metadata : dict
-        Dictionary containing all fields for the edition metadata.
-    _schema : dict
-        Schema definition for metadata validation.
-    """
-    def __init__(self,schema:Union[str, dict]):
-        """
-        Initialize an editionConfig instance with a schema and default metadata.
-
-        Parameters
-        ----------
-        schema : Union[str, dict]
-            Path to a JSON schema file (str) or a schema dictionary (dict).
-        
-        Raises
-        ------
-        TypeError
-            If the schema is not a dictionary or does not parse to a dictionary.
-        """
-        #An inistialisation with default values will affect the QA functionality because empty fields filled with default values with the correct format
-        #default values were change into None to mark them as incomplete for QA
-        self._edition_metadata = {
-            "dataset_id": None,
-            "edition": None,
-            "edition_title": None,
-            #we keep the date related field format as string for now but we might change it back to datetime.datetime(2050, 1, 1)
-            #Python's datetime.datetime objects are not JSON serializable by default. If you try to json.dump() your metadata, 
-            #you will get a TypeError: Object of type datetime is not JSON serializable.
-            "release_date": None,
-            "version": None,
-            #this will be a string in dd/mm/yyyy format as same as other predefined date
-            "last_updated": datetime.datetime.now().strftime("%d/%m/%Y"),
-            #we will acknowledge the editor of using the enums in validation
-            "quality_designation": None,
-            "Usage_Note": {"title": None, "note": None},
-            #we will acknowledge the editor of using the enums in validation
-            "Alert": {"Alerttype": None, "date": None, "description": None},
-            #we will acknowledge the editor of using the enums in validation
-            "Distribution": {"title": None, "format": None, "download_url": None, "byte_size": None, "media_type": None}
-        }
-        #If it's a file path, load it. Otherwise, assume it's already a dict.
-        self._schema = self.load_json(schema) if isinstance(schema, str) else schema
-        #Defensive: check types after assignment
-        if not isinstance(self._schema , dict):
-            raise TypeError("Schema must be a dict or a JSON file that parses to a dict.")
-    
-    def import_from_dict(self, new_metadata: dict):
-        """
-        Import metadata from a user-provided dictionary, validating top-level keys and values.
-
-        Parameters
-        ----------
-        new_metadata : dict
-            Dictionary containing metadata fields and values to import.
-
-        Raises
-        ------
-        TypeError
-            If the input is not a dictionary.
-        KeyError
-            If any key in new_meta_data is not a valid metadata field.
-        """
-        if not isinstance(new_metadata, dict):
-            raise TypeError("Input must be a dictionary.")
-        
-        ##just import the dictionary without checking the metadata instance
-        # self._edition_metadata=new_meta_data
-
-
-        #we assign all available values and leave other fields as None which was initialised
-        for key, value in new_metadata.items():
-            if key in self._edition_metadata.keys():
-                self.set(key, value)
-            else:
-                raise KeyError(f'ERROR: The config fields in the dictonary you are trying to use are incorrect.\n Please make sure you are using these fields for your config file:{list(self._edition_metadata.keys())}')
-
-    def get(self, key: str):
-        """
-        Retrieve the value for a specific field in the edition metadata.
-
-        Parameters
-        ----------
-        key : str
-            Field name to retrieve.
-
-        Returns
-        -------
-        object
-            Value associated with the specified field.
-
-        Raises
-        ------
-        KeyError
-            If the specified key does not exist in the metadata.
-        """ 
-        if key in self._edition_metadata:
-            return self._edition_metadata.get(key)
-        else:
-            raise KeyError(f'{key} is not present in the metadata. \
-                           Please choose from {list(self._edition_metadata.keys())}')
-    
-    
-
-    #values for nested field should be dictionary
-    def set(self, key: str, value, schema=None):
-        """
-        Set or update the value for a specific field in the edition metadata, with schema validation.
-
-        Parameters
-        ----------
-        key : str
-            Metadata field to update.
-        value : object
-            New value for the field.
-            Values for nested field should be dictionary
-        schema : dict, optional
-            Schema or schema subsection for validation (default: uses instance schema).
-
-        Returns
-        -------
-        object or None
-            Validated value if successful, else None (if validation fails).
-        """
-        if schema is None:
-            schema=self._schema["properties"]
-        
-        validated_value=self.initial_validate_and_build(key, value, schema)
-        if validated_value is not None:
-            self._edition_metadata[key] = validated_value
-            return validated_value
-        return None
-    
-    def initial_validate_and_build(self,key: str, value, schema):
-        """
-        initial Validatation of value against the schema for setter (supports enums, dates, and nested objects).
-        Performs recursive validation for complex/nested types.
-
-        Parameters
-        ----------
-        key : str
-            Metadata field name.
-        value : object
-            Value to validate.
-            Values for nested field should be dictionary.
-        schema : dict
-            Schema definition for validation.
-
-        Returns
-        -------
-        object or None
-            Validated value (possibly transformed), or None if validation fails.
-        """
-        if key not in schema:
-            print(f"{key} is not a valid key.")
-            return None
-        #look into the values in case if there's nested values (or another schema)
-        key_schema = schema[key]
-        # print(":::",key_schema)
-
-        #ENUM field
-        if "enum" in key_schema:
-            allowed_values=key_schema["enum"]
-            if value not in allowed_values:
-                print(f"{value} is not valid; possible choices: {allowed_values}")
-                return None
-            
-            #BASE CASE: leaf assignment for enum
-            #Passes validated enum up the call stack
-            #We need to return value so that each step of the recursion can pass the fully validated (and possibly transformed) data up to its parent call
-            return value
-        
-
-        #DATETIME field
-        elif key_schema.get("type")=="datetime":
-            if isinstance(value, datetime.datetime):
-                # Convert datetime to string for the the final json file
-                value = value.strftime("%d/%m/%Y")   
-            if not isinstance(value, str):
-                print(f"{value} for {key} is not a string. Please use string format")
-                return None   
-            try:
-                #Only validate, don't convert
-                #checks if the string value matches the date format "dd/mm/yyyy"
-                datetime.datetime.strptime(value, "%d/%m/%Y")
-            except ValueError:
-                print(f'{value} is the wrong datetime format. Try "dd/mm/yyyy".')
-                return None
-            #BASE CASE: leaf assignment for datetime
-            #Passes validated enum up the call stack
-            #Store as the validated string
-            return value
-
-        #NESTED OBJECT
-        elif key_schema["type"]=="object" and "properties" in key_schema:
-            if not isinstance(value, dict):
-                print(f"{key} expects an object/dict value.")
-                return None
-            #iterating through all keys and values inside the nested field
-            validated_results={}
-            for subkey, subval in value.items():
-                # Recursively set each property in the nested object
-                nested_result=self.initial_validate_and_build(subkey,subval,key_schema["properties"])
-                #early exit
-                #If a subfield validator returns None, you should abort the entire nested set to avoid partial writes.
-                if nested_result is None:
-                    return None
-                validated_results[subkey]=nested_result
-            #We need to return validated_results so that each step of the recursion can pass the fully validated (and possibly transformed) data up to its parent call
-            return validated_results
-        
-        #Default: assign as is 
-        else:
-            #BASE CASE: leaf assignment for other types
-            return value
-
-
-        
-    ##we are using import_from_dict to do intial validation here
-    def load_metadata_from_file(self, config_path: str):
-        """
-        Load edition metadata from a JSON or YAML file and import it into the instance.
-
-        Parameters
-        ----------
-        config_path : str
-            Path to the JSON or YAML file containing metadata.
-            This should be raw string not normal string ('\' as separator preferably)
-
-        Returns
-        -------
-        dict
-            Loaded metadata dictionary.
-
-        Raises
-        ------
-        FileNotFoundError
-            If the file does not exist.
-        ValueError
-            If the file cannot be parsed as valid JSON or YAML.
-        """
-        #check file extension
-        format = config_path.split(".")[-1].lower()
-        verified_config_path = Path(config_path)
-        
-        if not verified_config_path.exists():
-            raise FileNotFoundError(f'Configuration file not found: {verified_config_path}')
-        
-        try:
-            with open(verified_config_path, 'r') as file:
-                if format == 'json':
-                    loaded_raw_metadata = json.load(file)
-                elif format in ['yaml', 'yml']:
-                    loaded_raw_metadata = yaml.safe_load(file)
-                else:
-                    raise ValueError(f'Unsupported file format: {format}. Only "json" and "yaml" are supported.')
-        except json.JSONDecodeError as e:
-            raise ValueError(f'Error parsing JSON file: {e}')
-        except yaml.YAMLError as e:
-            raise ValueError(f'Error parsing YAML file: {e}')
-    
-        # it only validates input dictionary and updates the _dataset_metadata attribute of the instance
-        self.import_from_dict(loaded_raw_metadata)
-
-        return loaded_raw_metadata
-    
-    def export_to_json(self, file_path: str = '/api_formatter/results'):
-        """
-        Exports the edition metadata to a .json file.
-
-        Parameters
-        ----------
-        file_path : str, optional
-            The directory path for where the json file will be stored, by default '/api_formatter/results'
-        """
-        with open(f"{file_path}/{self._edition_metadata.get('edition_title')}_metadata.json", 'w') as fp:
-            json.dump(self._edition_metadata, fp)
-    
-    def __str__(self):
-        """
-        Return a human-readable string representation of the edition metadata.
-
-        Returns
-        -------
-        str
-            Formatted string with edition title and dataset ID.
-        """
-        return f'Edition: {self._edition_metadata["edition_title"]}, as part of Dataset: {self._edition_metadata["dataset_id"]}'
-    
-        
-    def load_json(self,file_path:str):
-        """
-        Load and parse a JSON schema file.
-
-        Parameters
-        ----------
-        file_path : str
-            Path to the JSON file to load.
-
-        Returns
-        -------
-        dict
-            Parsed JSON schema.
-
-        Raises
-        ------
-        FileNotFoundError
-            If the specified file does not exist.
-        json.JSONDecodeError
-            If the file is not valid JSON.
-        """
-        # Load your schema (as shown in your message)
-        with open(file_path) as f:
-            data = json.load(f)
-        return data
-    
-
-    def check_type(self,value, schema):
-        """
-        Validates that a value matches the expected type and, if specified, allowed values (enums) from a schema definition.
-
-        Supported types (from schema 'type' field):
-            - 'string'         : Must be a Python str.
-            - 'integer'        : Must be a Python int.
-            - 'array'          : Must be a Python list, with recursive validation for 'items'.
-            - 'object'         : Must be a Python dict, with recursive validation for 'properties'.
-            - 'pathlib.Path'   : Must be a Python str or pathlib.Path.
-            - 'datetime'       : Must be a string in "%d/%m/%Y" format.
-            - 'enum'           : If present, value must be in schema["enum"].
-
-        If the schema includes an 'enum', the value must also be present in the allowed list.
-
-        Parameters
-        ----------
-            value: The value to validate.
-            schema (dict): The schema definition for this property (should include at least 'type', optionally 'enum', and for arrays, 'items').
-
-        Returns
-        -------
-            bool: True if the value matches the expected type and enum (if defined), False otherwise.
-
-        Note:
-            - For arrays, only supports homogeneous lists and validates each item recursively using the 'items' schema.
-            - For objects, recursively validates dictionary keys/values using 'properties'.
-            - To support new types, extend this method accordingly.
-        """
-
-        #Passing the schema (not just a type) gives your function all the 
-        #information it needs to properly and recursively validate any structure defined in JSON Schema.
-        data_type=schema.get('type')
-        if data_type == "string":
-            if not isinstance(value, str):
-                #return isinstance(value, str)) exit the function immediately.
-                return False
-        elif data_type == "integer":
-            if not isinstance(value, int):
-                return False
-        elif data_type == "array":
-            if not isinstance(value, list):
-                return False
-            # Check each item type in the list using the items schema
-            item_schema=schema.get("items",{})
-            #Recursively check each item against its schema
-            if not all(self.check_type(item, item_schema) for item in value):
-                return False
-        elif data_type == "pathlib.Path":
-            if not (isinstance(value, str) or isinstance(value, Path)):
-                return False
-        #not sure if we get datetime python format or string in the drafted metdata so we check both scenarios
-        elif data_type=="datetime":
-            if not isinstance(value, str):
-                #only accept strings that match the format.
-                #convert datetime.datetime to a string before calling this function, which we did in initial_validate_and_build
-                return False
-            elif isinstance(value,str):
-                try: 
-                    datetime.datetime.strptime(value,"%d/%m/%Y")
-                except ValueError:
-                    print(f'{value} is the wrong datetime format. Try "dd/mm/yyyy".')
-                    return False
-            else:
-                return False
-        #UNKNOWN TYPE: safer to return False than True
-        #If the "type" is not one of those you explicitly handle (like "string", "integer", "array", etc.), the code reaches the final fallback line
-        else:
-            return False
-        #we only use the schema for enums although we have custom variable enum functions
-        #because the schema is more flexible when we have to change the enum variables
-        if "enum" in schema:
-            return value in schema['enum']
-        
-        return True
-    
-    #we will have recursive calls in this method so should define instance in case of recurisve calls otherwise the class instance will be used
-    def validate(self,metadata:Optional[dict] = None, schema:Optional[dict] = None, path=""):
-        """
-        Recursively validate the metadata dictionary against the schema, collecting all errors.
-
-        Parameters
-        ----------
-        metadata : dict, optional
-            Metadata to validate (default: instance metadata).
-        schema : dict, optional
-            Schema to validate against (default: instance schema).
-        path : str, optional
-            Nested property path for error reporting (internal use).
-
-        Returns
-        -------
-        list of str
-            List of validation error messages.
-        """
-        if metadata is None:
-            metadata=self._edition_metadata
-        if schema is None:
-            schema=self._schema 
-        #If you use a local variable like errors = [] inside validate and pass it along or return it, 
-        # each call (including recursive calls) works on its own error list and aviod being overwritten unlike when it's an instance vraiable
-        errors=[]
-        #extact properties and required values
-        props = schema.get("properties", {})
-        required = schema.get("required", [])
-        # Now check nested required fields for objects (fields with "properties").
-        for req_key in required:
-            if req_key not in metadata:
-                errors.append(f"Missing required field: {path}{req_key}")
-
-        #check all the schema's keys and values in the properties field recursively
-        for key, val_schema in props.items():
-            if key not in metadata:
-                continue  # If a property key (key) is not present in the metadata then next iteration              
-            val = metadata[key]
-            # iterating through nested objects if there's nested properties object in the current propreties
-            if "properties" in val_schema:
-                errors += self.validate(val, val_schema, path + key + ".")
-            #If it's a leaf (last layer), it type-checks the value.
-            elif "type" in val_schema:
-                # Type check
-                #we shouldn't pass schema (the whole schema for the object) instead of val_schema (the schema for this property) to check_type
-                if not self.check_type(val, val_schema):
-                    #check the datasettype errors
-                    if "enum" in val_schema:
-                        errors.append(
-                            f"Incorrect Dataset Type for {path}{key}: allowed types are {val_schema['enum']}, but got {repr(val)}"
-                        )
-                    #other errors
-                    else:
-                        errors.append(
-                            f"Incorrect type for {path}{key}: expected {val_schema['type']}, but got {type(val).__name__}"
-                        )  
-        # Optionally keep for later
-        self.errors=errors
-        return errors      
-    
-
-    def print_QA_errors(self):
-        """
-        Print the results of the most recent quality assurance (QA) validation in a human-readable format.
-        If no validation has been run, indicates that validation has passed by default.
-        Note: 
-           - Always run validation to refresh self.errors
-        """
-        #First, makes sure the attribute exists, so the next check is safe.
-        #Then, checks if that attribute is non-empty/truthy.
-        #Prevents an AttributeError if self.errors hasn’t been set yet.
-        #this condition prevent any ussage of the method before validation
-        if hasattr(self,'errors') and self.errors:
-            print("Validation failed with errors:")
-            for e in self.errors:
-                print("-", e)
-        else:
-            print("Validation passed!")
-
-
-    def get_errors(self):
-        """
-        Retrieve the list of validation errors from the most recent validation run.
-
-        Returns
-        -------
-        list of str
-            List of validation error messages, or an empty list if none exist.
-        """
-        return getattr(self,'errors',[])
-
 

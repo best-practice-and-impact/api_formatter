@@ -1,0 +1,96 @@
+{
+  "type": "object",
+  "properties": {
+    "Dataset": {
+      "dataType": "object",
+      "properties": {
+        "id": { "dataType": "string" },
+        "title": { "dataType": "string" },
+        "description": { "dataType": "string" },
+        "topics": { "dataType": "array", "items": { "dataType": "string" } },
+        "qmi": {
+          "dataType": "object",
+          "properties": {
+            "href": { "dataType": "string" }
+          },
+          "required": ["href"]
+        },
+        "contacts": {
+          "dataType": "object",
+          "properties": {
+            "name": { "dataType": "string" },
+            "email": { "dataType": "string" },
+            "telephone": { "dataType": "string" }
+          },
+          "required": ["name", "email"]
+        },
+        "publisher": {
+          "dataType": "object",
+          "properties": {
+            "name": { "dataType": "string" },
+            "href": { "dataType": "string" }
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "qmi",
+        "topics",
+        "contacts"
+      ]
+    },
+    "Edition": {
+      "dataType": "object",
+      "properties": {
+        "edition": { "dataType": "string" },
+        "edition_title": { "dataType": "string" },
+        "quality_designation": {
+          "dataType": "string",
+          "enum": [
+            "accredited-official",
+            "official",
+            "official-in-development"
+          ]
+        },
+        "usage_notes": {
+          "dataType": "object",
+          "properties": {
+            "title": { "dataType": "array", "items": { "dataType": "string" } },
+            "note": { "dataType": "array", "items": { "dataType": "string" } }
+          },
+          "required": ["title", "note"]
+        },
+        "alerts": {
+          "dataType": "object",
+          "properties": {
+            "type": {
+              "dataType": "string",
+              "enum": [ "alert", "correction" ]
+            },
+            "description": { "dataType": "string" }
+          },
+          "required": ["type", "description"]
+        },
+        "distributions": {
+          "dataType": "object",
+          "properties": {
+            "title": { "dataType": "string" },
+            "format": {
+              "dataType": "string",
+              "enum": ["csv", "sdmx", "xls", "xlsx", "csdb"]
+            }
+          },
+          "required": ["title", "format"]
+        }
+      },
+      "required": [
+        "edition",
+        "edition_title",
+        "distributions"
+      ]
+    }
+  },
+  "required": ["Dataset", "Edition"]
+}

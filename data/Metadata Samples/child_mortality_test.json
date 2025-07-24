@@ -1,0 +1,52 @@
+{
+    "Dataset": {
+        "id": "child-and-infant-mortality-year-death-england-wales-2022",
+        "title": "Table 1: Live births, stillbirths, all infant deaths and child deaths under 16: numbers and rates, 1980 to 2022",
+        "description": "Live births, stillbirths and linked infant deaths occurring annually in England and Wales, and associated risk factors.",
+        "qmi": {
+            "href": "https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/methodologies/childmortalitystatisticsqmi"
+        },
+        "topics": ["Population", "Child mortality"],
+        "contacts": {
+            "name": "Population Health Monitoring Group",
+            "email": "Health.Data@ons.gov.uk",
+            "telephone": "+44 1329 444110"
+        },
+        "publisher": {
+            "name": "ONS",
+            "href": "https://www.gov.uk/government/organisations/office-for-national-statistics"
+        }
+    },
+    "Edition": {
+        "edition": "may-2024",
+        "edition_title": "",
+        "quality_designation": "accredited-official",
+        "usage_notes": {
+            "title": ["note 1", "note 2", "note 3", "note 4", "note 5", "note 6"],
+            "note": ["note 1: Including births and deaths to persons normally resident outside England and Wales.",
+                "note 2: On 1 October 1992 the Stillbirth (Definition) Act 1992 came into force, altering the definition of a stillbirth to 24 or more weeks completed gestation, instead of 28 or more weeks completed gestation. Therefore, figures for stillbirths from 1993 are not fully comparable with those for previous years. The figures for 1992 exclude the 216 stillbirths of 24-27 weeks gestation that occurred between 1 October and 31 December. See section 3.1 of User guide to child and infant mortality statistics.",
+                "note 3: Rates were not calculated where there were fewer than 3 deaths, denoted by a [x]; rates based on such low numbers are susceptible to inaccurate interpretation. Rates calculated where there were between 3 and 19 deaths are denoted by a [u] as a warning to the user that their reliability as a measure may be affected by the small number of events.",
+                "note 4: Stillbirths and early neonatal deaths per 1,000 live births and stillbirths. ",
+                "note 5: Early neonatal, neonatal, postneonatal and infant deaths per 1,000 live births.",
+                "note 6: Childhood deaths per 100,000 persons in that age group in population. Childhood rates for 2022 have been calculated using provisional mid-2022 population estimates. Rates for 2012 to 2022 will be revised in future when mid-year population estimates (based on the 2021 Census) are available. See cover sheet for more information."]
+        },
+        "alerts": {
+            "type": "",
+            "description": ""
+        },
+        "distributions": {
+            "title": "cim2022deathcohortworkbook",
+            "format": "xlsx"
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+

@@ -71,6 +71,9 @@ class MetadataConfig:
         Prints validation errors in a human-readable format.
     get_errors()
         Returns the list of errors from the last validation, or an empty list if none exist.
+    preview()
+        Prints the metadata in a human-readable format (JSON or YAML).
+
 
     Examples
     --------
@@ -552,3 +555,26 @@ class MetadataConfig:
         """
         return getattr(self,'errors',[])
 
+    def preview(self, format):
+        """
+        Print out the metadata to the console as in yaml or json format.
+        Parameters
+        ----------
+        format: str
+            The format to preview the metadata - should be yaml or json.
+            Raises ValueError if a different value is supplied.
+        
+        Returns
+        -------
+        None
+        """
+        if format not in ["yaml", "json"]:
+            raise ValueError("Preview format should be 'yaml' or 'json'")
+
+
+        elif format == "json":
+            print(json.dumps(self._metadata, indent=4))
+        elif format == "yaml":
+            print(yaml.dump(self._metadata, indent=4))
+
+        return None

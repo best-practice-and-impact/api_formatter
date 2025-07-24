@@ -127,31 +127,32 @@ class MetadataConfig:
     def get(self, key: str):
         """
         Retrieve the value of the corresponding key within the metadata.
-
+        Supports nested keys using dot notation (e.g., "Edition.edition").
         Parameters
         ----------
         key : str
-            Key used to index metadata.
-
+            Key used to index metadata, possibly using dot notation for nested keys.
         Returns
         -------
         object
             Value of the input key.
-
         Raises
         ------
         KeyError
             If the input key is not a field in the metadata.
         """
-        ##just import the dictionary without checking the metadata instance
-        # self._edition_metadata=new_meta_data
+        keys = key.split(".")
+        value = self._metadata
+
+        for k in keys:
+            if isinstance(value, dict) and k in value:
+                value = value[k]
+            else:
+                raise KeyError(f"'{key}' is not a valid config option")
+
+        return value
 
 
-        #we assign all available values and leave other fields as None which was initialised
-        if key in self._metadata:
-            return self._metadata.get(key)
-        else:
-            raise KeyError(f'{key} is not a config option. Please choose from {list(self._metadata.keys())}')
 
     def set(self, nested_path: str, value):
         """
@@ -179,31 +180,42 @@ class MetadataConfig:
         #If users accidentally include spaces in the path (e.g., "contacts. email"), it could cause hard-to-debug issues.
         keys=[key.strip() for key in nested_path.split(".")]
         current_metadata=self._metadata
-        current_schema=self._schema.get("properties",{})
-        for i, key in enumerate(keys):
-            if key not in current_metadata:
-                    current_metadata[key]={}
-            # Final key: validate and set
-            if i==len(keys)-1:
-                validated_value=self.initial_validate_and_build(key, value, current_schema)
-                if validated_value is not None:
+        current_schema=self._schema
+        try:
+            # Start at the root schema level, which has "properties"
+            # current_schema = current_schema.get("properties", {})
+            for i, key in enumerate(keys):
+                if key not in current_metadata:
+                        current_metadata[key]={}
+                # Final key: validate and set
+                if i==len(keys)-1:
+                    validated_value=self.initial_validate_and_build(key, value, current_schema["properties"])
                     current_metadata[key] = validated_value             
+                # Intermediate key: go deeper 
                 else:
-                    raise ValueError(f"Validation failed for {key} with value: {value}")
-            # Intermediate key: go deeper 
-            else:
-                # Intermediate key: go deeper
-                if key not in current_schema["properties"]:
-                    raise KeyError(f"'{key}' is not a valid field in the schema.")
-                # Ensure the current key has a 'properties' attribute before proceeding
-                if "properties" not in current_schema[key]:
-                    raise KeyError(f"'{key}' does not have nested properties in the schema.")
-                current_metadata=current_metadata[key]
-                #properties for other fields inside the current field
-                current_schema=current_schema[key]["properties"]
-        return validated_value
+                    # Intermediate key: go deeper
+                    if "properties" not in current_schema or  key not in current_schema["properties"]:
+                        raise KeyError(f"'{key}' is not a valid field in the schema.")
+                    # Ensure the current key has a 'properties' attribute before proceeding
+                    if "properties" not in current_schema["properties"][key]:
+                        raise KeyError(f"'{key}' does not have nested properties in the schema.")
+                    current_metadata=current_metadata[key]
+                    #properties for other fields inside the current field
+                    current_schema=current_schema["properties"][key]
+            return validated_value
+        # except ValueError as ve:
+        #     raise ValueError(str(ve))
 
-    def initial_validate_and_build(self,key: str, value, schema):
+        # except KeyError as ke:
+        #     raise KeyError(str(ke))
+        except ValueError as ve:
+            raise ve
+
+        except KeyError as ke:
+            raise KeyError(f"Key error for path '{nested_path}': {str(ke)}")
+
+
+    def initial_validate_and_build(self,key: str, value, schema,full_path=None):
         """
         Recursively validate a value against the schema (supports enums, dates, and nested objects).
 
@@ -222,8 +234,13 @@ class MetadataConfig:
             Validated value (possibly transformed), or None if validation fails.
         """
         if key not in schema:
-            print(f"{key} is not a valid key.")
-            return None
+            raise KeyError(f"{key} is not a valid key in the schema.")
+        
+        # Build the full path for error reporting
+        if full_path is None:
+            current_path=key
+        else:
+            current_path=f"{full_path}.{key}" if full_path else key
         #look into the values in case if there's nested values (or another schema)
         key_schema = schema[key]
 
@@ -231,14 +248,8 @@ class MetadataConfig:
         if "enum" in key_schema:
             allowed_values=key_schema["enum"]
             if value not in allowed_values:
-                print(f"{value} is not valid; possible choices: {allowed_values}")
-                return None
+                raise  ValueError(f"Validation error for path '{current_path}': Value '{value}' is not valid for '{key}'. Possible choices are: {allowed_values}")
             
-            #BASE CASE: leaf assignment for enum
-            #Passes validated enum up the call stack
-            #We need to return value so that each step of the recursion can pass the fully validated (and possibly transformed) data up to its parent call
-            return value
-        
 
         #DATETIME field
         elif key_schema.get("type")=="datetime":
@@ -246,35 +257,42 @@ class MetadataConfig:
                 # Convert datetime to string for the the final json file
                 value = value.strftime("%d/%m/%Y")  
             if not isinstance(value, str):
-                print(f"{value} for {key} is not a string. Please use string format")
-                return None   
+                raise ValueError(f"Validation error for path '{current_path}': {value} for {key} is not a string. Please use string format") 
             try:
                 #Only validate, don't convert
                 #checks if the string value matches the date format "dd/mm/yyyy"
                 datetime.datetime.strptime(value, "%d/%m/%Y")
             except ValueError:
-                print(f'{value} is the wrong datetime format. Try "dd/mm/yyyy".')
-                return None
-            #BASE CASE: leaf assignment for datetime
-            #Passes validated enum up the call stack
-            #Store as the validated string
-            return value
+                raise ValueError(f"Validation error for path '{current_path}': Value '{value}' is the wrong datetime format for '{key}'. Try 'dd/mm/yyyy'.")
 
         #NESTED OBJECT
         elif key_schema["type"]=="object" and "properties" in key_schema:
             if not isinstance(value, dict):
-                print(f"{key} expects an object/dict value.")
-                return None
+                raise ValueError(f"Validation error for path '{current_path}': Value for '{key}' expects an object/dict.")
             #iterating through all keys and values inside the nested field
             validated_results={}
+            errors=[]
             for subkey, subval in value.items():
-                # Recursively set each property in the nested object
-                nested_result=self.initial_validate_and_build(subkey,subval,key_schema["properties"])
+                if subkey not in key_schema["properties"]:
+                    errors.append(KeyError(f"'{subkey}' is not a valid key in the schema for '{key}'."))
+                    #If the subkey is invalid, you still proceed to validate it, which may raise a KeyError again. You should continue after appending the error
+                    continue
+                try:
+                    # Recursively set each property in the nested object
+                    nested_result=self.initial_validate_and_build(subkey,subval,key_schema["properties"],current_path)
+                    validated_results[subkey]=nested_result
                 #early exit
                 #If a subfield validator returns None, you should abort the entire nested set to avoid partial writes.
-                if nested_result is None:
-                    return None
-                validated_results[subkey]=nested_result
+                except (ValueError, KeyError) as e:
+                    # Don't re-wrap the error, just let it bubble up
+                    errors.append(e)
+            
+            if errors:        
+                error_messages = "\n  - ".join(str(e) for e in errors)
+                raise ValueError(f"{error_messages}")
+
+
+                
             #We need to return validated_results so that each step of the recursion can pass the fully validated (and possibly transformed) data up to its parent call
             return validated_results
         
@@ -507,11 +525,17 @@ class MetadataConfig:
                 # Type check
                 #we shouldn't pass schema (the whole schema for the object) instead of val_schema (the schema for this property) to check_type
                 if not self.check_type(val, val_schema):
+                    print(val_schema)
                     #check the datasettype errors
                     if "enum" in val_schema:
                         errors.append(
-                            f"Incorrect Dataset Type for {path}{key}: allowed types are {val_schema['enum']}, but got {repr(val)}"
+                            f"Incorrect dataset type for {path}{key}: allowed types are {val_schema['enum']}, but got {repr(val)}"
                         )
+                    elif "items" in val_schema:
+                        errors.append(
+                            f"Incorrect item type for {path}{key}: allowed types are {val_schema['items']["type"]}, but got {repr(val)}"
+                        )
+                    
                     #other errors
                     else:
                         errors.append(

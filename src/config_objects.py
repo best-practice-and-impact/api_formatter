@@ -233,9 +233,18 @@ class MetadataConfig:
 
         Returns
         -------
-        object or None
-            Validated value (possibly transformed), or None if validation fails.
+        Any
+            Validated value (possibly transformed).
+
+        Raises
+        ------
+        KeyError
+            If the key is not found in the schema.
+        ValueError
+            If value fails enum, datetime, or nested-object validation.
+
         """
+        
         if key not in schema:
             raise KeyError(f"{key} is not a valid key in the schema.")
         
@@ -252,6 +261,7 @@ class MetadataConfig:
             allowed_values=key_schema["enum"]
             if value not in allowed_values:
                 raise  ValueError(f"Validation error for path '{current_path}': Value '{value}' is not valid for '{key}'. Possible choices are: {allowed_values}")
+            return value
             
 
         #DATETIME field
@@ -267,6 +277,7 @@ class MetadataConfig:
                 datetime.datetime.strptime(value, "%d/%m/%Y")
             except ValueError:
                 raise ValueError(f"Validation error for path '{current_path}': Value '{value}' is the wrong datetime format for '{key}'. Try 'dd/mm/yyyy'.")
+            return value
 
         #NESTED OBJECT
         elif key_schema["type"]=="object" and "properties" in key_schema:
@@ -595,10 +606,8 @@ class MetadataConfig:
         if format not in ["yaml", "json"]:
             raise ValueError("Preview format should be 'yaml' or 'json'")
 
-
         elif format == "json":
             print(json.dumps(self._metadata, indent=4))
         elif format == "yaml":
             print(yaml.dump(self._metadata, indent=4))
-
         return None

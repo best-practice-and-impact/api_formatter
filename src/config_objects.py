@@ -156,7 +156,7 @@ class MetadataConfig:
         return value
 
 
-
+    #what if they want to set a dict as a value?
     def set(self, nested_path: str, value):
         """
         Set or update the value for a specific field in the metadata, supporting nested paths.
@@ -188,12 +188,16 @@ class MetadataConfig:
             # Start at the root schema level, which has "properties"
             # current_schema = current_schema.get("properties", {})
             for i, key in enumerate(keys):
+                # print(f"Processing key: {key}, current_metadata keys: {current_metadata.keys()}")
                 if key not in current_metadata:
                         current_metadata[key]={}
                 # Final key: validate and set
                 if i==len(keys)-1:
+                    #current_schema["properties"] will take the validation into the next nested field
+                    #without ["properties"] we get key error
                     validated_value=self.initial_validate_and_build(key, value, current_schema["properties"])
-                    current_metadata[key] = validated_value             
+                    current_metadata[key] = validated_value
+                    # print(f"Assigned value for {key}: {current_metadata[key]}")             
                 # Intermediate key: go deeper 
                 else:
                     # Intermediate key: go deeper
@@ -253,11 +257,14 @@ class MetadataConfig:
             current_path=key
         else:
             current_path=f"{full_path}.{key}" if full_path else key
+
+        # print(f"Validating key '{key}' at path '{current_path}' with value: {value}")
         #look into the values in case if there's nested values (or another schema)
         key_schema = schema[key]
 
         #ENUM field
         if "enum" in key_schema:
+            # print(f"enum started")
             allowed_values=key_schema["enum"]
             if value not in allowed_values:
                 raise  ValueError(f"Validation error for path '{current_path}': Value '{value}' is not valid for '{key}'. Possible choices are: {allowed_values}")
@@ -280,13 +287,16 @@ class MetadataConfig:
             return value
 
         #NESTED OBJECT
+        #we should remove the recursion as there's field iterations in the set method and check only leaf node
         elif key_schema["type"]=="object" and "properties" in key_schema:
+            # print(f"nested_object started")
             if not isinstance(value, dict):
                 raise ValueError(f"Validation error for path '{current_path}': Value for '{key}' expects an object/dict.")
             #iterating through all keys and values inside the nested field
             validated_results={}
             errors=[]
             for subkey, subval in value.items():
+                # print(f"nested_object->  subkey:{subkey}, sub-value:{subval}")
                 if subkey not in key_schema["properties"]:
                     errors.append(KeyError(f"'{subkey}' is not a valid key in the schema for '{key}'."))
                     #If the subkey is invalid, you still proceed to validate it, which may raise a KeyError again. You should continue after appending the error
@@ -310,8 +320,27 @@ class MetadataConfig:
             #We need to return validated_results so that each step of the recursion can pass the fully validated (and possibly transformed) data up to its parent call
             return validated_results
         
+        elif "type" in key_schema:
+            expected_type=key_schema["type"]
+            type_map = {
+                "string": str,
+                "integer": int,
+                "float": float,
+                "boolean": bool,
+                "array": list,
+                "object": dict
+                }
+
+            if not isinstance(value,type_map[expected_type]):
+                raise ValueError(
+                f"Validation error for path '{current_path}': Expected type '{expected_type}' for '{key}', but got '{type(value).__name__}' with value '{value}'."
+                )
+            return value
+
+        
         #Default: assign as is 
         else:
+            # print("no need for validation")
             #BASE CASE: leaf assignment for other types
             return value
         
@@ -376,17 +405,6 @@ class MetadataConfig:
         #changed title instance with the title method instance avoding any conflict with the new metadata fields
         with open(f"{file_path}/{title}_metadata.json", 'w') as fp:
             json.dump(self._metadata, fp)
-    #removing this because we might not have title or id key in new metadata fields
-    # def __str__(self):
-    #     """
-    #     Return a string representation of the dataset, including title and ID.
-
-    #     Returns
-    #     -------
-    #     str
-    #         String representation of the dataset.
-    #     """
-    #     return f'Dataset: {self._dataset_metadata["title"]}, ID: {self._dataset_metadata["id"]}'
 
 
     def load_json(self,file_path:str):
@@ -539,7 +557,7 @@ class MetadataConfig:
                 # Type check
                 #we shouldn't pass schema (the whole schema for the object) instead of val_schema (the schema for this property) to check_type
                 if not self.check_type(val, val_schema):
-                    print(val_schema)
+                    # print(val_schema)
                     #check the datasettype errors
                     if "enum" in val_schema:
                         errors.append(
